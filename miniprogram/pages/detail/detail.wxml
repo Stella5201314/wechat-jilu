@@ -1,0 +1,484 @@
+<!-- pages/detail/detail.wxml -->
+<view class="detail-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <image src="/assets/icons/back.svg" class="back-icon"></image>
+      <text class="header-title">素材详情</text>
+    </view>
+    <view class="header-actions">
+      <button 
+        class="btn-action" 
+        bindtap="toggleEditMode"
+        wx:if="{{!isLoading && !showAnalysis}}"
+      >
+        <image src="/assets/icons/{{isEditing ? 'save' : 'edit'}}.svg" class="action-icon"></image>
+        <text>{{isEditing ? '保存' : '编辑'}}</text>
+      </button>
+      <button 
+        class="btn-action" 
+        bindtap="toggleAnalysis"
+        wx:if="{{!isLoading && !isEditing}}"
+      >
+        <image src="/assets/icons/analysis.svg" class="action-icon"></image>
+        <text>{{showAnalysis ? '返回' : '分析'}}</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 加载状态 -->
+  <view class="loading-container" wx:if="{{isLoading}}">
+    <view class="loading-content">
+      <image src="/assets/icons/loading.svg" class="loading-icon"></image>
+      <text class="loading-text">加载中...</text>
+    </view>
+  </view>
+
+  <!-- 错误状态 -->
+  <view class="error-container" wx:if="{{!isLoading && loadError}}">
+    <view class="error-content">
+      <image src="/assets/icons/error.svg" class="error-icon"></image>
+      <text class="error-title">加载失败</text>
+      <text class="error-message">{{errorMessage}}</text>
+      <button class="btn-retry" bindtap="retryLoad">重试</button>
+    </view>
+  </view>
+
+  <!-- 主内容区域 -->
+  <scroll-view 
+    class="detail-scroll" 
+    scroll-y="{{true}}" 
+    enhanced="{{true}}"
+    wx:if="{{!isLoading && !loadError}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    bindrefresherrefresh="onPullDownRefresh"
+  >
+    
+    <!-- 分析面板 -->
+    <analysis-panel 
+      wx:if="{{showAnalysis}}"
+      material-id="{{materialId}}"
+      bindback="toggleAnalysis"
+    />
+
+    <!-- 详情视图 -->
+    <view class="detail-content" wx:if="{{!showAnalysis}}">
+      
+      <!-- 素材卡片预览 -->
+      <view class="preview-section">
+        <material-card 
+          material="{{material}}"
+          mode="detail"
+          bindquickuse="onQuickUse"
+          bindshare="onShareMaterial"
+        />
+      </view>
+
+      <!-- 标签管理区 -->
+      <view class="tags-section card">
+        <view class="section-header">
+          <image src="/assets/icons/tag.svg" class="section-icon"></image>
+          <text class="section-title">标签管理</text>
+          <view class="section-actions">
+            <button 
+              class="btn-tag-analyze" 
+              size="mini" 
+              bindtap="analyzeTags"
+              loading="{{isAnalyzingTags}}"
+            >
+              智能分析
+            </button>
+          </view>
+        </view>
+
+        <!-- 标签编辑器 -->
+        <tag-editor 
+          impression-tags="{{material.impressionTags || []}}"
+          structure-tags="{{material.structureTags || []}}"
+          function-tags="{{material.functionTags || []}}"
+          is-editing="{{isEditing}}"
+          bindtagchange="onTagChange"
+        />
+
+        <!-- 标签统计 -->
+        <view class="tag-stats" wx:if="{{!isEditing && material.tagStats}}">
+          <view class="stat-item">
+            <text class="stat-label">使用次数</text>
+            <text class="stat-value">{{material.tagStats.usageCount || 0}}</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">匹配率</text>
+            <text class="stat-value">{{material.tagStats.matchRate || 0}}%</text>
+          </view>
+          <view class="stat-item">
+            <text class="stat-label">推荐度</text>
+            <text class="stat-value">{{material.tagStats.recommendScore || 0}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 来源信息区 -->
+      <view class="source-section card">
+        <view class="section-header">
+          <image src="/assets/icons/source.svg" class="section-icon"></image>
+          <text class="section-title">来源信息</text>
+          <button 
+            class="btn-verify" 
+            size="mini" 
+            bindtap="verifySource"
+            wx:if="{{material.sourceInfo?.url && !isEditing}}"
+          >
+            验证链接
+          </button>
+        </view>
+
+        <!-- 来源查看/编辑器 -->
+        <source-viewer 
+          source-info="{{material.sourceInfo || {}}}"
+          is-editing="{{isEditing}}"
+          bindsourcechange="onSourceChange"
+        />
+
+        <!-- 来源验证结果 -->
+        <view class="verification-result" wx:if="{{verificationResult}}">
+          <view class="verification-header">
+            <image 
+              src="/assets/icons/{{verificationResult.success ? 'success' : 'warning'}}.svg" 
+              class="verification-icon"
+            ></image>
+            <text class="verification-title">{{verificationResult.title}}</text>
+          </view>
+          <text class="verification-message">{{verificationResult.message}}</text>
+        </view>
+      </view>
+
+      <!-- 分类信息区 -->
+      <view class="category-section card">
+        <view class="section-header">
+          <image src="/assets/icons/category.svg" class="section-icon"></image>
+          <text class="section-title">分类信息</text>
+        </view>
+
+        <!-- 分类显示 -->
+        <view class="category-display" wx:if="{{!isEditing}}">
+          <view class="category-tags">
+            <block wx:for="{{material.categories || []}}" wx:key="index">
+              <view class="category-tag">
+                {{item}}
+                <image 
+                  src="/assets/icons/close-small.svg" 
+                  class="category-remove"
+                  bindtap="removeCategory"
+                  data-category="{{item}}"
+                  wx:if="{{isEditing}}"
+                ></image>
+              </view>
+            </block>
+            <view 
+              class="category-add" 
+              bindtap="addCategory"
+              wx:if="{{isEditing}}"
+            >
+              <image src="/assets/icons/add.svg" class="add-icon"></image>
+              <text>添加分类</text>
+            </view>
+          </view>
+        </view>
+
+        <!-- 分类编辑器 -->
+        <view class="category-editor" wx:if="{{isEditing}}">
+          <picker 
+            mode="selector" 
+            range="{{availableCategories}}"
+            value="{{newCategoryIndex}}"
+            bindchange="onCategoryPickerChange"
+          >
+            <view class="category-picker">
+              <text>{{newCategoryIndex >= 0 ? availableCategories[newCategoryIndex] : '选择分类'}}</text>
+              <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+            </view>
+          </picker>
+          
+          <view class="selected-categories">
+            <block wx:for="{{material.categories || []}}" wx:key="index">
+              <view class="selected-category">
+                {{item}}
+                <image 
+                  src="/assets/icons/close-small.svg" 
+                  class="remove-icon"
+                  bindtap="removeCategory"
+                  data-index="{{index}}"
+                ></image>
+              </view>
+            </block>
+          </view>
+        </view>
+
+        <!-- 分类建议 -->
+        <view class="category-suggestions" wx:if="{{categorySuggestions.length > 0 && !isEditing}}">
+          <text class="suggestions-title">智能分类建议：</text>
+          <view class="suggestion-tags">
+            <block wx:for="{{categorySuggestions}}" wx:key="index">
+              <view 
+                class="suggestion-tag"
+                bindtap="applyCategorySuggestion"
+                data-category="{{item}}"
+              >
+                {{item}}
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+
+      <!-- 使用历史区 -->
+      <view class="history-section card">
+        <view class="section-header">
+          <image src="/assets/icons/history.svg" class="section-icon"></image>
+          <text class="section-title">使用历史</text>
+          <text class="section-subtitle">共{{usageHistory.length}}次使用</text>
+        </view>
+
+        <!-- 使用历史列表 -->
+        <usage-history 
+          history="{{usageHistory}}"
+          binditemclick="onHistoryItemClick"
+        />
+
+        <!-- 空状态 -->
+        <view class="empty-history" wx:if="{{usageHistory.length === 0}}">
+          <image src="/assets/icons/history-empty.svg" class="empty-icon"></image>
+          <text class="empty-text">暂无使用记录</text>
+          <text class="empty-hint">在写作中引用此素材后，使用记录将显示在这里</text>
+        </view>
+      </view>
+
+      <!-- 相关信息区 -->
+      <view class="related-section card">
+        <view class="section-header">
+          <image src="/assets/icons/related.svg" class="section-icon"></image>
+          <text class="section-title">相关素材</text>
+          <button 
+            class="btn-refresh-related" 
+            size="mini" 
+            bindtap="refreshRelated"
+            loading="{{isLoadingRelated}}"
+          >
+            刷新
+          </button>
+        </view>
+
+        <!-- 相关素材列表 -->
+        <view class="related-materials">
+          <block wx:for="{{relatedMaterials}}" wx:for-index="index" wx:for-item="item" wx:key="_id">
+            <view 
+              class="related-item" 
+              bindtap="viewRelatedMaterial"
+              data-id="{{item._id}}"
+            >
+              <view class="related-content">
+                <text class="related-title">{{item.title || '未命名素材'}}</text>
+                <text class="related-preview">{{item.preview}}</text>
+                <view class="related-tags">
+                  <block wx:for="{{item.tags || []}}" wx:key="index">
+                    <text class="related-tag">{{item}}</text>
+                  </block>
+                </view>
+              </view>
+              <view class="related-similarity">
+                <text class="similarity-value">{{item.similarity}}%</text>
+                <text class="similarity-label">相似度</text>
+              </view>
+            </view>
+          </block>
+        </view>
+
+        <!-- 空状态 -->
+        <view class="empty-related" wx:if="{{relatedMaterials.length === 0}}">
+          <image src="/assets/icons/related-empty.svg" class="empty-icon"></image>
+          <text class="empty-text">暂无相关素材</text>
+          <button class="btn-find-related" bindtap="findRelatedMaterials">
+            查找相关素材
+          </button>
+        </view>
+      </view>
+
+      <!-- 元数据区 -->
+      <view class="metadata-section card">
+        <view class="section-header">
+          <image src="/assets/icons/metadata.svg" class="section-icon"></image>
+          <text class="section-title">元数据</text>
+        </view>
+
+        <view class="metadata-grid">
+          <view class="metadata-item">
+            <text class="metadata-label">创建时间</text>
+            <text class="metadata-value">{{material.createTime ? formatDate(material.createTime) : '未知'}}</text>
+          </view>
+          <view class="metadata-item">
+            <text class="metadata-label">更新时间</text>
+            <text class="metadata-value">{{material.updateTime ? formatDate(material.updateTime) : '未知'}}</text>
+          </view>
+          <view class="metadata-item">
+            <text class="metadata-label">字数统计</text>
+            <text class="metadata-value">{{material.content?.length || 0}} 字</text>
+          </view>
+          <view class="metadata-item">
+            <text class="metadata-label">隐私设置</text>
+            <text class="metadata-value">{{material.privacy === 'public' ? '可分享' : '仅自己可见'}}</text>
+          </view>
+          <view class="metadata-item">
+            <text class="metadata-label">素材ID</text>
+            <text class="metadata-value metadata-id">{{material._id || '未知'}}</text>
+          </view>
+          <view class="metadata-item">
+            <text class="metadata-label">存储位置</text>
+            <text class="metadata-value">{{material.storageLocation || '云端'}}</text>
+          </view>
+        </view>
+      </view>
+
+      <!-- 危险操作区 -->
+      <view class="danger-section card">
+        <view class="section-header">
+          <image src="/assets/icons/danger.svg" class="section-icon"></image>
+          <text class="section-title">危险操作</text>
+        </view>
+
+        <view class="danger-actions">
+          <button 
+            class="btn-danger export" 
+            bindtap="exportMaterial"
+          >
+            导出素材
+          </button>
+          <button 
+            class="btn-danger duplicate" 
+            bindtap="duplicateMaterial"
+          >
+            复制素材
+          </button>
+          <button 
+            class="btn-danger delete" 
+            bindtap="deleteMaterial"
+          >
+            删除素材
+          </button>
+        </view>
+
+        <view class="danger-hint">
+          <text>⚠️ 删除操作不可撤销，请谨慎操作</text>
+        </view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions" wx:if="{{!isLoading && !loadError && !showAnalysis}}">
+    <button 
+      class="btn-bottom primary" 
+      bindtap="useInWriting"
+    >
+      在写作中使用
+    </button>
+    <button 
+      class="btn-bottom" 
+      bindtap="addToCollection"
+    >
+      加入收藏夹
+    </button>
+    <button 
+      class="btn-bottom" 
+      bindtap="shareMaterial"
+    >
+      分享素材
+    </button>
+  </view>
+
+  <!-- 分类选择模态框 -->
+  <view class="modal-category" wx:if="{{showCategoryModal}}">
+    <view class="modal-mask" bindtap="hideCategoryModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">选择分类</text>
+        <image 
+          src="/assets/icons/close.svg" 
+          class="modal-close"
+          bindtap="hideCategoryModal"
+        ></image>
+      </view>
+      
+      <scroll-view class="modal-body" scroll-y="{{true}}">
+        <view class="category-list">
+          <block wx:for="{{availableCategories}}" wx:key="index">
+            <view 
+              class="category-item {{material.categories && material.categories.indexOf(item) > -1 ? 'selected' : ''}}"
+              bindtap="selectCategory"
+              data-category="{{item}}"
+            >
+              <text class="category-name">{{item}}</text>
+              <image 
+                src="/assets/icons/check.svg" 
+                class="category-check"
+                wx:if="{{material.categories && material.categories.indexOf(item) > -1}}"
+              ></image>
+            </view>
+          </block>
+        </view>
+        
+        <!-- 创建新分类 -->
+        <view class="new-category-input">
+          <input 
+            placeholder="输入新分类名称" 
+            value="{{newCustomCategory}}"
+            bindinput="onNewCategoryInput"
+            bindconfirm="addCustomCategory"
+          />
+          <button class="btn-add-category" bindtap="addCustomCategory">添加</button>
+        </view>
+      </scroll-view>
+      
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideCategoryModal">取消</button>
+        <button class="btn-modal confirm" bindtap="confirmCategories">确认</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 确认删除模态框 -->
+  <view class="modal-delete" wx:if="{{showDeleteModal}}">
+    <view class="modal-mask"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <image src="/assets/icons/warning.svg" class="modal-warning-icon"></image>
+        <text class="modal-title">确认删除</text>
+      </view>
+      
+      <view class="modal-body">
+        <text class="delete-message">确定要删除这个素材吗？此操作不可撤销。</text>
+        <text class="delete-hint">该素材已被使用 {{usageHistory.length}} 次，删除后相关记录也会被清除。</text>
+        
+        <view class="delete-options" wx:if="{{usageHistory.length > 0}}">
+          <label class="delete-option">
+            <checkbox checked="{{keepUsageRecords}}" bindchange="onKeepRecordsChange" />
+            <text class="option-text">保留使用记录</text>
+          </label>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideDeleteModal">取消</button>
+        <button class="btn-modal delete" bindtap="confirmDelete">确认删除</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 操作成功提示 -->
+  <view class="toast-success" wx:if="{{showSuccessToast}}">
+    <view class="toast-content">
+      <image src="/assets/icons/success.svg" class="toast-icon"></image>
+      <text class="toast-message">{{successMessage}}</text>
+    </view>
+  </view>
+</view>

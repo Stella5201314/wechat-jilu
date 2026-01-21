@@ -1,0 +1,395 @@
+<!-- pages/guide/guide.wxml -->
+<view class="guide-page">
+  <!-- 引导内容容器 -->
+  <swiper 
+    class="guide-swiper" 
+    current="{{currentIndex}}" 
+    bindchange="onSwiperChange"
+    circular="{{false}}"
+    indicator-dots="{{true}}"
+    indicator-color="rgba(0, 0, 0, 0.2)"
+    indicator-active-color="#1890ff"
+    autoplay="{{false}}"
+    interval="5000"
+    duration="500"
+  >
+    <!-- 引导页1：欢迎页 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content welcome">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-welcome.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">欢迎使用灵材智库</text>
+          <text class="guide-subtitle">您的专属AI写作策源地</text>
+          
+          <view class="guide-description">
+            <text>将零散阅读转化为系统知识\n将灵感碎片编织成专业文稿</text>
+          </view>
+          
+          <view class="guide-features">
+            <view class="feature-item">
+              <image src="/assets/icons/feature-collect.svg" class="feature-icon"></image>
+              <text class="feature-text">智能收集素材</text>
+            </view>
+            <view class="feature-item">
+              <image src="/assets/icons/feature-organize.svg" class="feature-icon"></image>
+              <text class="feature-text">结构化知识管理</text>
+            </view>
+            <view class="feature-item">
+              <image src="/assets/icons/feature-generate.svg" class="feature-icon"></image>
+              <text class="feature-text">AI辅助写作</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="guide-progress">
+          <text class="progress-text">1/6</text>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: 16.67%"></view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- 引导页2：素材收集 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-collect.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">第一步：智能收集素材</text>
+          
+          <view class="guide-steps">
+            <view class="step-item">
+              <view class="step-number">1</view>
+              <view class="step-content">
+                <text class="step-title">随时随地收集</text>
+                <text class="step-desc">遇到好的文案、观点、数据，一键收藏</text>
+              </view>
+            </view>
+            
+            <view class="step-item">
+              <view class="step-number">2</view>
+              <view class="step-content">
+                <text class="step-title">智能打标签</text>
+                <text class="step-desc">凭直觉选择印象标签，系统自动深度分析</text>
+              </view>
+            </view>
+            
+            <view class="step-item">
+              <view class="step-number">3</view>
+              <view class="step-content">
+                <text class="step-title">完善来源信息</text>
+                <text class="step-desc">记录出处，建立可信的知识资产</text>
+              </view>
+            </view>
+          </view>
+          
+          <view class="guide-tip">
+            <image src="/assets/icons/tip.svg" class="tip-icon"></image>
+            <text class="tip-text">小贴士：支持文字粘贴、图片OCR识别、网页分享导入</text>
+          </view>
+        </view>
+        
+        <view class="guide-progress">
+          <text class="progress-text">2/6</text>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: 33.33%"></view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- 引导页3：素材管理 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-organize.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">第二步：结构化知识管理</text>
+          
+          <view class="guide-feature-cards">
+            <view class="feature-card">
+              <view class="card-header">
+                <image src="/assets/icons/tag-smart.svg" class="card-icon"></image>
+                <text class="card-title">智能标签体系</text>
+              </view>
+              <text class="card-desc">三层标签系统：印象标签 → 结构标签 → 功能标签</text>
+            </view>
+            
+            <view class="feature-card">
+              <view class="card-header">
+                <image src="/assets/icons/category-smart.svg" class="card-icon"></image>
+                <text class="card-title">多维分类管理</text>
+              </view>
+              <text class="card-desc">按行业、用途、场景多维度组织素材库</text>
+            </view>
+            
+            <view class="feature-card">
+              <view class="card-header">
+                <image src="/assets/icons/search-smart.svg" class="card-icon"></image>
+                <text class="card-title">智能检索匹配</text>
+              </view>
+              <text class="card-desc">语义搜索，快速找到最相关的素材</text>
+            </view>
+          </view>
+          
+          <view class="guide-demo">
+            <view class="demo-header">
+              <text class="demo-title">💡 跨界灵感启发</text>
+            </view>
+            <text class="demo-text">系统会自动推荐不同行业但结构相似的优秀范例，激发创作灵感</text>
+          </view>
+        </view>
+        
+        <view class="guide-progress">
+          <text class="progress-text">3/6</text>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: 50%"></view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- 引导页4：写作生成 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-write.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">第三步：AI辅助写作</text>
+          
+          <view class="guide-process">
+            <view class="process-step">
+              <view class="process-icon">📝</view>
+              <view class="process-content">
+                <text class="process-title">输入写作需求</text>
+                <text class="process-desc">描述写作目标、读者、风格</text>
+              </view>
+            </view>
+            
+            <view class="process-arrow">↓</view>
+            
+            <view class="process-step">
+              <view class="process-icon">📋</view>
+              <view class="process-content">
+                <text class="process-title">生成智能提纲</text>
+                <text class="process-desc">系统根据需求生成结构化提纲</text>
+              </view>
+            </view>
+            
+            <view class="process-arrow">↓</view>
+            
+            <view class="process-step">
+              <view class="process-icon">🔍</view>
+              <view class="process-content">
+                <text class="process-title">匹配相关素材</text>
+                <text class="process-desc">自动匹配个人素材库中的相关内容</text>
+              </view>
+            </view>
+            
+            <view class="process-arrow">↓</view>
+            
+            <view class="process-step">
+              <view class="process-icon">✨</view>
+              <view class="process-content">
+                <text class="process-title">生成AI指令</text>
+                <text class="process-desc">组合成完整的DeepSeek指令</text>
+              </view>
+            </view>
+          </view>
+          
+          <view class="guide-example">
+            <text class="example-title">📄 生成结果示例：</text>
+            <view class="example-box">
+              <text class="example-text">一篇既有政策高度，又有实践深度的调研报告</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="guide-progress">
+          <text class="progress-text">4/6</text>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: 66.67%"></view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- 引导页5：跨界融合 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-cross.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">第四步：跨界融合创新</text>
+          <text class="guide-subtitle">打破行业壁垒，激发创意火花</text>
+          
+          <view class="cross-examples">
+            <view class="cross-item">
+              <view class="cross-header">
+                <text class="cross-from">科技发布会</text>
+                <image src="/assets/icons/arrow-right.svg" class="cross-arrow"></image>
+                <text class="cross-to">政务报告</text>
+              </view>
+              <text class="cross-desc">借鉴科技产品的叙事逻辑，让政务报告更生动</text>
+            </view>
+            
+            <view class="cross-item">
+              <view class="cross-header">
+                <text class="cross-from">广告文案</text>
+                <image src="/assets/icons/arrow-right.svg" class="cross-arrow"></image>
+                <text class="cross-to">工作总结</text>
+              </view>
+              <text class="cross-desc">学习广告的感染力，让工作总结更有温度</text>
+            </view>
+            
+            <view class="cross-item">
+              <view class="cross-header">
+                <text class="cross-from">学术论文</text>
+                <image src="/assets/icons/arrow-right.svg" class="cross-arrow"></image>
+                <text class="cross-to">方案策划</text>
+              </view>
+              <text class="cross-desc">吸收学术研究的严谨性，提升方案的逻辑深度</text>
+            </view>
+          </view>
+          
+          <view class="guide-insight">
+            <image src="/assets/icons/insight.svg" class="insight-icon"></image>
+            <view class="insight-content">
+              <text class="insight-title">核心价值</text>
+              <text class="insight-text">不是简单的素材堆砌，而是思维模式的迁移与融合</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="guide-progress">
+          <text class="progress-text">5/6</text>
+          <view class="progress-bar">
+            <view class="progress-fill" style="width: 83.33%"></view>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+
+    <!-- 引导页6：快速开始 -->
+    <swiper-item class="guide-item">
+      <view class="guide-content final">
+        <view class="guide-illustration">
+          <image src="/assets/images/guide-start.svg" class="guide-image"></image>
+        </view>
+        
+        <view class="guide-text">
+          <text class="guide-title">一切就绪，开始创作吧！</text>
+          
+          <view class="quick-start-options">
+            <view 
+              class="start-option" 
+              bindtap="startCollecting"
+            >
+              <image src="/assets/icons/start-collect.svg" class="option-icon"></image>
+              <text class="option-title">立即收集素材</text>
+              <text class="option-desc">从收藏第一段文字开始</text>
+            </view>
+            
+            <view 
+              class="start-option" 
+              bindtap="startWriting"
+            >
+              <image src="/assets/icons/start-write.svg" class="option-icon"></image>
+              <text class="option-title">开始写作</text>
+              <text class="option-desc">使用模板快速生成文稿</text>
+            </view>
+            
+            <view 
+              class="start-option" 
+              bindtap="exploreTemplates"
+            >
+              <image src="/assets/icons/start-template.svg" class="option-icon"></image>
+              <text class="option-title">浏览模板库</text>
+              <text class="option-desc">学习优秀写作范例</text>
+            </view>
+          </view>
+          
+          <view class="guide-reminder">
+            <text class="reminder-title">🎯 核心使用技巧</text>
+            <view class="reminder-tips">
+              <text>• 定期整理素材库，保持标签准确</text>
+              <text>• 写作时善用"跨界灵感"功能</text>
+              <text>• 保存成功的Prompt作为模板</text>
+              <text>• 关注素材的来源和时间，提升可信度</text>
+            </view>
+          </view>
+        </view>
+        
+        <view class="guide-actions">
+          <button 
+            class="btn-start" 
+            type="primary" 
+            bindtap="completeGuide"
+          >
+            开始使用灵材智库
+          </button>
+          
+          <view class="extra-options">
+            <label class="option-checkbox">
+              <checkbox checked="{{dontShowAgain}}" bindchange="onDontShowAgainChange" />
+              <text class="checkbox-text">不再显示引导页</text>
+            </label>
+            
+            <button 
+              class="btn-review" 
+              plain 
+              bindtap="restartGuide"
+            >
+              重新查看引导
+            </button>
+          </view>
+        </view>
+      </view>
+    </swiper-item>
+  </swiper>
+
+  <!-- 导航按钮 -->
+  <view class="guide-navigation" wx:if="{{currentIndex < 5}}">
+    <button 
+      class="btn-nav prev" 
+      bindtap="prevPage"
+      disabled="{{currentIndex === 0}}"
+    >
+      上一页
+    </button>
+    
+    <view class="page-indicators">
+      <block wx:for="{{6}}" wx:key="index">
+        <view 
+          class="page-indicator {{currentIndex === index ? 'active' : ''}}"
+          bindtap="goToPage"
+          data-index="{{index}}"
+        ></view>
+      </block>
+    </view>
+    
+    <button 
+      class="btn-nav next" 
+      bindtap="nextPage"
+    >
+      {{currentIndex === 4 ? '完成' : '下一页'}}
+    </button>
+  </view>
+
+  <!-- 跳过引导 -->
+  <view class="guide-skip" wx:if="{{currentIndex < 5}}" bindtap="skipGuide">
+    <text>跳过引导</text>
+  </view>
+</view>

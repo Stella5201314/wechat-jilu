@@ -1,0 +1,13 @@
+{
+  "usingComponents": {
+    "source-input": "/components/common/source-input/source-input",
+    "tag-selector": "/components/common/tag-selector/tag-selector",
+    "category-selector": "/components/business/category-selector/category-selector",
+    "ocr-processor": "/components/business/ocr-processor/ocr-processor"
+  },
+  "navigationBarTitleText": "收集素材",
+  "navigationBarBackgroundColor": "#52c41a",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "disableScroll": false
+}

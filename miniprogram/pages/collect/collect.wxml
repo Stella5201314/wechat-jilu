@@ -1,0 +1,364 @@
+<!-- pages/collect/collect.wxml -->
+<view class="collect-page">
+  <!-- 页面标题和返回按钮 -->
+  <view class="page-header">
+    <view class="header-left" bindtap="goBack">
+      <image src="/assets/icons/back.svg" class="back-icon"></image>
+      <text class="header-title">收集新素材</text>
+    </view>
+    <view class="header-actions">
+      <button class="btn-save-draft" bindtap="saveAsDraft" wx:if="{{isEditing}}">
+        存草稿
+      </button>
+    </view>
+  </view>
+
+  <scroll-view class="collect-scroll" scroll-y="{{true}}" enhanced="{{true}}" scroll-into-view="{{scrollToView}}">
+    <!-- 来源提示区域 -->
+    <view class="source-hint" wx:if="{{sourceHint}}">
+      <image src="/assets/icons/info.svg" class="hint-icon"></image>
+      <text class="hint-text">{{sourceHint}}</text>
+      <button class="btn-hint-close" bindtap="clearSourceHint">
+        <image src="/assets/icons/close-small.svg"></image>
+      </button>
+    </view>
+
+    <!-- 多源输入区 -->
+    <view class="input-section card">
+      <view class="section-header">
+        <image src="/assets/icons/content.svg" class="section-icon"></image>
+        <text class="section-title">素材内容</text>
+        <view class="section-tips">
+          <text class="char-count">{{content.length}}/5000</text>
+        </view>
+      </view>
+
+      <!-- 文本输入区域 -->
+      <textarea 
+        class="content-input" 
+        placeholder="粘贴文本内容（支持多段文字）..." 
+        value="{{content}}"
+        bindinput="onContentChange"
+        bindblur="onContentBlur"
+        maxlength="5000"
+        auto-height="{{true}}"
+        show-confirm-bar="{{false}}"
+        cursor-spacing="20"
+      />
+
+      <!-- OCR图片上传区域 -->
+      <view class="ocr-section" wx:if="{{showOCR}}">
+        <ocr-processor 
+          bindocrcomplete="onOCRComplete"
+          bindocrcancel="onOCRCancel"
+        />
+      </view>
+
+      <!-- 输入操作按钮 -->
+      <view class="input-actions">
+        <button class="btn-action" bindtap="toggleOCR">
+          <image src="/assets/icons/camera.svg" class="btn-icon"></image>
+          <text>{{showOCR ? '关闭图片识别' : '上传图片识别'}}</text>
+        </button>
+        
+        <button class="btn-action" bindtap="pasteFromClipboard">
+          <image src="/assets/icons/paste.svg" class="btn-icon"></image>
+          <text>从剪贴板粘贴</text>
+        </button>
+        
+        <button class="btn-action" bindtap="clearContent">
+          <image src="/assets/icons/clear.svg" class="btn-icon"></image>
+          <text>清空内容</text>
+        </button>
+      </view>
+
+      <!-- OCR识别结果 -->
+      <view class="ocr-result card" wx:if="{{ocrText}}">
+        <view class="ocr-header">
+          <image src="/assets/icons/ocr.svg" class="ocr-icon"></image>
+          <text class="ocr-title">图片识别结果</text>
+          <button class="btn-ocr-use" bindtap="useOCRText">
+            使用此文本
+          </button>
+        </view>
+        <view class="ocr-content">
+          <text selectable="{{true}}">{{ocrText}}</text>
+        </view>
+        <view class="ocr-actions">
+          <button class="btn-ocr-append" bindtap="appendOCRText">
+            追加到末尾
+          </button>
+          <button class="btn-ocr-clear" bindtap="clearOCRText">
+            清除结果
+          </button>
+        </view>
+      </view>
+    </view>
+
+    <!-- 印象标签区 -->
+    <view class="tag-section card" id="tagSection">
+      <view class="section-header">
+        <image src="/assets/icons/tag.svg" class="section-icon"></image>
+        <text class="section-title">第一印象标签</text>
+        <text class="section-required">必选 1-3 个</text>
+      </view>
+      
+      <view class="section-hint">
+        <text>凭直觉选择，帮助我们理解您为什么收藏这段文字</text>
+      </view>
+
+      <!-- 印象标签选择器 -->
+      <tag-selector 
+        type="impression"
+        tags="{{impressionTags}}"
+        selected-tags="{{selectedImpressionTags}}"
+        max-select="{{3}}"
+        bindtagchange="onImpressionTagChange"
+      />
+
+      <!-- 标签说明 -->
+      <view class="tag-descriptions">
+        <view class="tag-desc-item" wx:for="{{impressionTags}}" wx:key="value">
+          <view class="tag-desc-header">
+            <view class="tag-demo {{item.value}}"></view>
+            <text class="tag-desc-name">{{item.name}}</text>
+          </view>
+          <text class="tag-desc-text">{{item.description}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 来源信息区 -->
+    <view class="source-section card" id="sourceSection">
+      <view class="section-header collapsible" bindtap="toggleSourceSection">
+        <view class="section-header-left">
+          <image src="/assets/icons/source.svg" class="section-icon"></image>
+          <text class="section-title">来源信息</text>
+          <text class="section-optional">可选</text>
+        </view>
+        <image 
+          src="/assets/icons/{{showSourceSection ? 'collapse' : 'expand'}}.svg" 
+          class="collapse-icon"
+        ></image>
+      </view>
+
+      <!-- 来源表单 -->
+      <view class="source-form" wx:if="{{showSourceSection}}">
+        <source-input 
+          source-type="{{sourceType}}"
+          source-title="{{sourceTitle}}"
+          source-author="{{sourceAuthor}}"
+          source-url="{{sourceUrl}}"
+          source-date="{{sourceDate}}"
+          source-note="{{sourceNote}}"
+          bindchange="onSourceChange"
+        />
+
+        <!-- 智能识别提示 -->
+        <view class="smart-recognition" wx:if="{{showSmartRecognition}}">
+          <view class="recognition-header">
+            <image src="/assets/icons/smart.svg" class="smart-icon"></image>
+            <text class="smart-title">智能识别建议</text>
+          </view>
+          <view class="recognition-suggestions">
+            <block wx:for="{{smartSuggestions}}" wx:key="field">
+              <view class="suggestion-item">
+                <text class="suggestion-field">{{item.field}}：</text>
+                <text class="suggestion-value">{{item.value}}</text>
+                <button 
+                  class="btn-suggestion-apply" 
+                  size="mini" 
+                  bindtap="applySuggestion"
+                  data-field="{{item.field}}"
+                  data-value="{{item.value}}"
+                >
+                  应用
+                </button>
+              </view>
+            </block>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <!-- 分类管理区 -->
+    <view class="category-section card" id="categorySection">
+      <view class="section-header">
+        <image src="/assets/icons/category.svg" class="section-icon"></image>
+        <text class="section-title">分类管理</text>
+        <text class="section-optional">建议选择</text>
+      </view>
+
+      <!-- 分类选择器 -->
+      <category-selector 
+        categories="{{userCategories}}"
+        selected-categories="{{selectedCategories}}"
+        new-category="{{newCategory}}"
+        bindcategorychange="onCategoryChange"
+        bindnewcategorychange="onNewCategoryChange"
+        bindaddcategory="addNewCategory"
+        bindremovecategory="removeCategory"
+      />
+
+      <!-- 分类建议 -->
+      <view class="category-suggestions" wx:if="{{categorySuggestions.length > 0}}">
+        <text class="suggestions-title">智能分类建议：</text>
+        <view class="suggestion-tags">
+          <block wx:for="{{categorySuggestions}}" wx:key="index">
+            <view 
+              class="suggestion-tag {{selectedCategories.indexOf(item) > -1 ? 'selected' : ''}}"
+              bindtap="toggleSuggestion"
+              data-category="{{item}}"
+            >
+              {{item}}
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 高级选项 -->
+    <view class="advanced-section card">
+      <view class="section-header collapsible" bindtap="toggleAdvancedSection">
+        <view class="section-header-left">
+          <image src="/assets/icons/advanced.svg" class="section-icon"></image>
+          <text class="section-title">高级选项</text>
+        </view>
+        <image 
+          src="/assets/icons/{{showAdvancedSection ? 'collapse' : 'expand'}}.svg" 
+          class="collapse-icon"
+        ></image>
+      </view>
+
+      <view class="advanced-form" wx:if="{{showAdvancedSection}}">
+        <!-- 隐私设置 -->
+        <view class="advanced-item">
+          <text class="advanced-label">隐私设置</text>
+          <radio-group class="privacy-options" bindchange="onPrivacyChange">
+            <label class="privacy-option">
+              <radio value="private" checked="{{privacy === 'private'}}" />
+              <text class="option-text">仅自己可见</text>
+            </label>
+            <label class="privacy-option">
+              <radio value="public" checked="{{privacy === 'public'}}" />
+              <text class="option-text">可分享（匿名）</text>
+            </label>
+          </radio-group>
+        </view>
+
+        <!-- 自动分析设置 -->
+        <view class="advanced-item">
+          <text class="advanced-label">自动分析</text>
+          <switch 
+            checked="{{autoAnalyze}}" 
+            bindchange="onAutoAnalyzeChange"
+            color="#52c41a"
+          />
+          <text class="advanced-hint">保存后自动分析文本并推荐结构标签</text>
+        </view>
+
+        <!-- 提醒设置 -->
+        <view class="advanced-item">
+          <text class="advanced-label">使用提醒</text>
+          <switch 
+            checked="{{setReminder}}" 
+            bindchange="onReminderChange"
+            color="#52c41a"
+          />
+          <text class="advanced-hint">3天后提醒使用此素材</text>
+        </view>
+
+        <!-- 提醒时间选择 -->
+        <view class="reminder-time" wx:if="{{setReminder}}">
+          <picker 
+            mode="date" 
+            value="{{reminderDate}}"
+            start="{{today}}"
+            end="{{maxReminderDate}}"
+            bindchange="onReminderDateChange"
+          >
+            <view class="reminder-picker">
+              <text>提醒日期：{{reminderDate}}</text>
+              <image src="/assets/icons/calendar.svg" class="picker-icon"></image>
+            </view>
+          </picker>
+        </view>
+      </view>
+    </view>
+
+    <!-- 底部操作按钮 -->
+    <view class="action-section" id="actionSection">
+      <view class="action-buttons">
+        <button 
+          class="btn-save" 
+          type="primary" 
+          bindtap="saveMaterial"
+          disabled="{{!canSave}}"
+          loading="{{isSaving}}"
+        >
+          {{isEditing ? '更新素材' : '保存素材'}}
+        </button>
+        
+        <button 
+          class="btn-save-analyze" 
+          bindtap="saveAndAnalyze"
+          disabled="{{!canSave}}"
+          loading="{{isAnalyzing}}"
+        >
+          {{isAnalyzing ? '分析中...' : '保存并智能分析'}}
+        </button>
+        
+        <button class="btn-cancel" bindtap="cancel">
+          取消
+        </button>
+      </view>
+
+      <!-- 保存状态提示 -->
+      <view class="save-status" wx:if="{{saveStatus}}">
+        <image src="/assets/icons/{{saveStatus.icon}}.svg" class="status-icon"></image>
+        <text class="status-text">{{saveStatus.message}}</text>
+      </view>
+    </view>
+  </scroll-view>
+
+  <!-- 保存成功的模态框 -->
+  <view class="modal-success" wx:if="{{showSuccessModal}}">
+    <view class="modal-mask"></view>
+    <view class="modal-content">
+      <view class="modal-body">
+        <image src="/assets/icons/success-large.svg" class="modal-icon"></image>
+        <text class="modal-title">保存成功！</text>
+        <text class="modal-message">{{successMessage}}</text>
+        
+        <view class="modal-actions">
+          <button class="btn-modal" bindtap="goToIndex">
+            返回写作
+          </button>
+          <button class="btn-modal" bindtap="goToLibrary">
+            查看素材库
+          </button>
+          <button class="btn-modal primary" bindtap="continueCollect">
+            继续收集
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 确认清除对话框 -->
+  <view class="modal-confirm" wx:if="{{showConfirmClear}}">
+    <view class="modal-mask" bindtap="hideConfirmClear"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">确认清空</text>
+      </view>
+      <view class="modal-body">
+        <text class="modal-message">确定要清空所有已填写的内容吗？此操作不可撤销。</text>
+      </view>
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideConfirmClear">取消</button>
+        <button class="btn-modal confirm" bindtap="confirmClear">确认清空</button>
+      </view>
+    </view>
+  </view>
+</view>

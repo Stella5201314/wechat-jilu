@@ -1,0 +1,13 @@
+{
+  "usingComponents": {
+    "material-card": "/components/business/material-card/material-card",
+    "advanced-filter": "/components/business/advanced-filter/advanced-filter",
+    "batch-actions": "/components/business/batch-actions/batch-actions"
+  },
+  "navigationBarTitleText": "素材库",
+  "navigationBarBackgroundColor": "#722ed1",
+  "navigationBarTextStyle": "white",
+  "backgroundColor": "#f5f5f5",
+  "enablePullDownRefresh": true,
+  "onReachBottomDistance": 100
+}

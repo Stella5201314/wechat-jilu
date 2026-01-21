@@ -1,0 +1,640 @@
+<!-- pages/library/library.wxml -->
+<view class="library-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-main">
+      <text class="header-title">素材库</text>
+      <text class="header-count">共 {{totalCount}} 条素材</text>
+    </view>
+    <view class="header-actions">
+      <button 
+        class="btn-action" 
+        bindtap="toggleBatchMode"
+        wx:if="{{!isBatchMode}}"
+      >
+        <image src="/assets/icons/batch.svg" class="action-icon"></image>
+        <text>批量操作</text>
+      </button>
+      <button 
+        class="btn-action" 
+        bindtap="exitBatchMode"
+        wx:if="{{isBatchMode}}"
+      >
+        <image src="/assets/icons/close.svg" class="action-icon"></image>
+        <text>退出批量</text>
+      </button>
+      <button 
+        class="btn-action" 
+        bindtap="gotoCollect"
+      >
+        <image src="/assets/icons/add.svg" class="action-icon"></image>
+        <text>收集素材</text>
+      </button>
+    </view>
+  </view>
+
+  <!-- 搜索和筛选栏 -->
+  <view class="search-filter-bar">
+    <!-- 搜索框 -->
+    <view class="search-box">
+      <image src="/assets/icons/search.svg" class="search-icon"></image>
+      <input 
+        class="search-input" 
+        placeholder="搜索素材内容或标签..." 
+        value="{{searchKeyword}}"
+        bindinput="onSearchInput"
+        bindconfirm="onSearchConfirm"
+        confirm-type="search"
+      />
+      <button 
+        class="btn-search-clear" 
+        bindtap="clearSearch"
+        wx:if="{{searchKeyword}}"
+      >
+        <image src="/assets/icons/close-small.svg"></image>
+      </button>
+    </view>
+
+    <!-- 筛选按钮 -->
+    <button 
+      class="btn-filter-toggle" 
+      bindtap="toggleFilterPanel"
+    >
+      <image src="/assets/icons/filter.svg" class="filter-icon"></image>
+      <text>筛选</text>
+      <view class="filter-badge" wx:if="{{activeFilterCount > 0}}">
+        {{activeFilterCount}}
+      </view>
+    </button>
+
+    <!-- 视图切换 -->
+    <view class="view-toggle">
+      <view 
+        class="view-option {{viewMode === 'list' ? 'active' : ''}}"
+        bindtap="switchViewMode"
+        data-mode="list"
+      >
+        <image src="/assets/icons/list-view.svg" class="view-icon"></image>
+      </view>
+      <view 
+        class="view-option {{viewMode === 'grid' ? 'active' : ''}}"
+        bindtap="switchViewMode"
+        data-mode="grid"
+      >
+        <image src="/assets/icons/grid-view.svg" class="view-icon"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 高级筛选面板 -->
+  <view 
+    class="filter-panel" 
+    wx:if="{{showFilterPanel}}"
+    animation="{{filterPanelAnimation}}"
+  >
+    <advanced-filter 
+      filters="{{filters}}"
+      active-filters="{{activeFilters}}"
+      bindfilterchange="onFilterChange"
+      bindreset="resetFilters"
+      bindapply="applyFilters"
+    />
+  </view>
+
+  <!-- 当前筛选状态 -->
+  <view class="active-filters-bar" wx:if="{{activeFilterCount > 0}}">
+    <scroll-view class="filters-scroll" scroll-x="{{true}}" enhanced="{{true}}">
+      <view class="filters-container">
+        <block wx:for="{{activeFiltersDisplay}}" wx:key="key">
+          <view class="active-filter-tag">
+            <text class="filter-label">{{item.label}}</text>
+            <text class="filter-value">{{item.value}}</text>
+            <image 
+              src="/assets/icons/close-small.svg" 
+              class="filter-remove"
+              bindtap="removeFilter"
+              data-key="{{item.key}}"
+            ></image>
+          </view>
+        </block>
+        <button class="btn-clear-all" bindtap="clearAllFilters">
+          清除所有
+        </button>
+      </view>
+    </scroll-view>
+  </view>
+
+  <!-- 批量操作栏 -->
+  <view 
+    class="batch-action-bar" 
+    wx:if="{{isBatchMode}}"
+    animation="{{batchBarAnimation}}"
+  >
+    <batch-actions 
+      selected-count="{{selectedMaterials.length}}"
+      bindaction="onBatchAction"
+      bindselectall="toggleSelectAll"
+    />
+  </view>
+
+  <!-- 内容区域 -->
+  <scroll-view 
+    class="content-scroll" 
+    scroll-y="{{true}}" 
+    enhanced="{{true}}"
+    refresher-enabled="{{true}}"
+    refresher-triggered="{{isRefreshing}}"
+    bindrefresherrefresh="onPullDownRefresh"
+    bindscrolltolower="onReachBottom"
+  >
+    <!-- 加载状态 -->
+    <view class="loading-indicator" wx:if="{{isLoading}}">
+      <image src="/assets/icons/loading.svg" class="loading-icon"></image>
+      <text class="loading-text">加载中...</text>
+    </view>
+
+    <!-- 空状态 -->
+    <view class="empty-state" wx:if="{{!isLoading && materials.length === 0}}">
+      <view class="empty-content">
+        <image src="/assets/images/empty-library.svg" class="empty-image"></image>
+        <text class="empty-title">
+          {{searchKeyword ? '未找到相关素材' : '素材库空空如也'}}
+        </text>
+        <text class="empty-desc">
+          {{searchKeyword ? '尝试更换关键词或调整筛选条件' : '开始收集您的第一份素材吧'}}
+        </text>
+        
+        <view class="empty-actions" wx:if="{{!searchKeyword}}">
+          <button class="btn-empty-primary" bindtap="gotoCollect">
+            收集新素材
+          </button>
+          <button class="btn-empty-secondary" bindtap="importDemoData">
+            导入示例数据
+          </button>
+        </view>
+        
+        <button 
+          class="btn-empty-secondary" 
+          bindtap="clearSearchAndFilters"
+          wx:if="{{searchKeyword || activeFilterCount > 0}}"
+        >
+          清除搜索和筛选
+        </button>
+      </view>
+    </view>
+
+    <!-- 列表视图 -->
+    <view class="materials-list" wx:if="{{materials.length > 0}}">
+      <!-- 批量选择模式 -->
+      <view class="batch-select-hint" wx:if="{{isBatchMode}}">
+        <text>已选择 {{selectedMaterials.length}} / {{materials.length}} 条素材</text>
+      </view>
+
+      <!-- 列表模式 -->
+      <view class="list-view" wx:if="{{viewMode === 'list'}}">
+        <block wx:for="{{materials}}" wx:for-index="index" wx:for-item="item" wx:key="_id">
+          <view 
+            class="list-item {{isBatchMode && selectedMaterials.includes(item._id) ? 'selected' : ''}}"
+            bindtap="onMaterialTap"
+            data-index="{{index}}"
+            data-id="{{item._id}}"
+            bindlongpress="onMaterialLongPress"
+            data-index="{{index}}"
+            data-id="{{item._id}}"
+          >
+            <!-- 选择框（批量模式显示） -->
+            <view 
+              class="item-selector" 
+              wx:if="{{isBatchMode}}"
+              bindtap.stop="toggleMaterialSelection"
+              data-id="{{item._id}}"
+            >
+              <image 
+                src="/assets/icons/{{selectedMaterials.includes(item._id) ? 'checkbox-checked' : 'checkbox'}}.svg" 
+                class="checkbox-icon"
+              ></image>
+            </view>
+
+            <!-- 素材内容 -->
+            <view class="item-content">
+              <!-- 标题和来源 -->
+              <view class="item-header">
+                <text class="item-title" wx:if="{{item.title}}">
+                  {{item.title}}
+                </text>
+                <text class="item-title placeholder" wx:else>
+                  未命名素材
+                </text>
+                
+                <view class="item-source" wx:if="{{item.sourceInfo?.title}}">
+                  <image src="/assets/icons/source-small.svg" class="source-icon"></image>
+                  <text class="source-text">{{item.sourceInfo.title}}</text>
+                </view>
+              </view>
+
+              <!-- 内容预览 -->
+              <view class="item-preview">
+                <text>{{item.preview}}</text>
+              </view>
+
+              <!-- 标签和分类 -->
+              <view class="item-tags">
+                <!-- 印象标签 -->
+                <block wx:for="{{item.impressionTags}}" wx:key="index" wx:if="{{index < 2}}">
+                  <view class="tag-impression">
+                    {{getImpressionTagName(item)}}
+                  </view>
+                </block>
+                
+                <!-- 分类标签 -->
+                <block wx:for="{{item.categories}}" wx:key="index" wx:if="{{index < 2}}">
+                  <view class="tag-category">
+                    {{item}}
+                  </view>
+                </block>
+                
+                <!-- 更多标签提示 -->
+                <view 
+                  class="tag-more" 
+                  wx:if="{{item.impressionTags.length + item.categories.length > 4}}"
+                >
+                  +{{item.impressionTags.length + item.categories.length - 4}}
+                </view>
+              </view>
+
+              <!-- 元数据 -->
+              <view class="item-metadata">
+                <view class="metadata-item">
+                  <image src="/assets/icons/time-small.svg" class="metadata-icon"></image>
+                  <text>{{formatRelativeTime(item.createTime)}}</text>
+                </view>
+                
+                <view class="metadata-item" wx:if="{{item.usageCount > 0}}">
+                  <image src="/assets/icons/usage-small.svg" class="metadata-icon"></image>
+                  <text>使用 {{item.usageCount}} 次</text>
+                </view>
+                
+                <view class="metadata-item" wx:if="{{item.lastUsedTime}}">
+                  <image src="/assets/icons/last-used.svg" class="metadata-icon"></image>
+                  <text>{{formatRelativeTime(item.lastUsedTime)}}使用</text>
+                </view>
+              </view>
+            </view>
+
+            <!-- 操作按钮（非批量模式显示） -->
+            <view class="item-actions" wx:if="{{!isBatchMode}}">
+              <button 
+                class="btn-item-action quick-use"
+                bindtap.stop="quickUseMaterial"
+                data-id="{{item._id}}"
+              >
+                <image src="/assets/icons/quick-use.svg" class="action-icon"></image>
+              </button>
+              <button 
+                class="btn-item-action more"
+                bindtap.stop="showMaterialActions"
+                data-index="{{index}}"
+                data-id="{{item._id}}"
+              >
+                <image src="/assets/icons/more.svg" class="action-icon"></image>
+              </button>
+            </view>
+          </view>
+        </block>
+      </view>
+
+      <!-- 网格视图 -->
+      <view class="grid-view" wx:if="{{viewMode === 'grid'}}">
+        <view class="grid-container">
+          <block wx:for="{{materials}}" wx:for-index="index" wx:for-item="item" wx:key="_id">
+            <view 
+              class="grid-item {{isBatchMode && selectedMaterials.includes(item._id) ? 'selected' : ''}}"
+              bindtap="onMaterialTap"
+              data-index="{{index}}"
+              data-id="{{item._id}}"
+              bindlongpress="onMaterialLongPress"
+              data-index="{{index}}"
+              data-id="{{item._id}}"
+            >
+              <!-- 选择框（批量模式显示） -->
+              <view 
+                class="grid-selector" 
+                wx:if="{{isBatchMode}}"
+                bindtap.stop="toggleMaterialSelection"
+                data-id="{{item._id}}"
+              >
+                <image 
+                  src="/assets/icons/{{selectedMaterials.includes(item._id) ? 'checkbox-checked' : 'checkbox'}}.svg" 
+                  class="checkbox-icon"
+                ></image>
+              </view>
+
+              <!-- 内容卡片 -->
+              <view class="grid-card">
+                <!-- 标签标识 -->
+                <view class="card-tags">
+                  <block wx:for="{{item.impressionTags}}" wx:key="index" wx:if="{{index < 1}}">
+                    <view class="card-tag-impression">
+                      {{getImpressionTagName(item)}}
+                    </view>
+                  </block>
+                </view>
+
+                <!-- 内容预览 -->
+                <view class="card-preview">
+                  <text>{{item.preview}}</text>
+                </view>
+
+                <!-- 标题 -->
+                <view class="card-title">
+                  <text wx:if="{{item.title}}">{{item.title}}</text>
+                  <text class="placeholder" wx:else>未命名素材</text>
+                </view>
+
+                <!-- 元信息 -->
+                <view class="card-meta">
+                  <view class="meta-item">
+                    <image src="/assets/icons/time-small.svg" class="meta-icon"></image>
+                    <text>{{formatRelativeTime(item.createTime)}}</text>
+                  </view>
+                  
+                  <view class="meta-item" wx:if="{{item.usageCount > 0}}">
+                    <image src="/assets/icons/usage-small.svg" class="meta-icon"></image>
+                    <text>{{item.usageCount}}</text>
+                  </view>
+                </view>
+              </view>
+            </view>
+          </block>
+        </view>
+      </view>
+    </view>
+
+    <!-- 加载更多 -->
+    <view class="load-more" wx:if="{{hasMore && materials.length > 0}}">
+      <view class="load-more-content" wx:if="{{!isLoadingMore}}">
+        <text class="load-more-text">上拉加载更多</text>
+        <image src="/assets/icons/arrow-down.svg" class="load-more-icon"></image>
+      </view>
+      <view class="load-more-content" wx:if="{{isLoadingMore}}">
+        <image src="/assets/icons/loading.svg" class="loading-icon"></image>
+        <text class="load-more-text">加载中...</text>
+      </view>
+    </view>
+
+    <!-- 底部提示 -->
+    <view class="bottom-hint" wx:if="{{!hasMore && materials.length > 0}}">
+      <text>已显示全部 {{totalCount}} 条素材</text>
+    </view>
+  </scroll-view>
+
+  <!-- 悬浮操作按钮 -->
+  <view class="floating-actions" wx:if="{{!isBatchMode}}">
+    <button 
+      class="btn-floating primary" 
+      bindtap="gotoCollect"
+    >
+      <image src="/assets/icons/add-white.svg" class="floating-icon"></image>
+    </button>
+    
+    <button 
+      class="btn-floating" 
+      bindtap="showQuickActions"
+      wx:if="{{materials.length > 0}}"
+    >
+      <image src="/assets/icons/more-vertical.svg" class="floating-icon"></image>
+    </button>
+  </view>
+
+  <!-- 素材操作菜单 -->
+  <view class="material-actions-modal" wx:if="{{showActionsModal}}">
+    <view class="modal-mask" bindtap="hideActionsModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">素材操作</text>
+      </view>
+      
+      <scroll-view class="modal-body" scroll-y="{{true}}">
+        <view class="action-list">
+          <view 
+            class="action-item" 
+            bindtap="viewMaterialDetail"
+          >
+            <image src="/assets/icons/view.svg" class="action-icon"></image>
+            <text class="action-text">查看详情</text>
+          </view>
+          
+          <view 
+            class="action-item" 
+            bindtap="editMaterial"
+          >
+            <image src="/assets/icons/edit.svg" class="action-icon"></image>
+            <text class="action-text">编辑素材</text>
+          </view>
+          
+          <view 
+            class="action-item" 
+            bindtap="quickUseMaterialFromModal"
+          >
+            <image src="/assets/icons/quick-use.svg" class="action-icon"></image>
+            <text class="action-text">快速使用</text>
+          </view>
+          
+          <view 
+            class="action-item" 
+            bindtap="duplicateMaterialFromModal"
+          >
+            <image src="/assets/icons/duplicate.svg" class="action-icon"></image>
+            <text class="action-text">复制素材</text>
+          </view>
+          
+          <view 
+            class="action-item" 
+            bindtap="addToCollectionFromModal"
+          >
+            <image src="/assets/icons/collect.svg" class="action-icon"></image>
+            <text class="action-text">加入收藏夹</text>
+          </view>
+          
+          <view 
+            class="action-item" 
+            bindtap="shareMaterialFromModal"
+          >
+            <image src="/assets/icons/share.svg" class="action-icon"></image>
+            <text class="action-text">分享素材</text>
+          </view>
+          
+          <view class="action-divider"></view>
+          
+          <view 
+            class="action-item danger" 
+            bindtap="deleteMaterialFromModal"
+          >
+            <image src="/assets/icons/delete.svg" class="action-icon"></image>
+            <text class="action-text">删除素材</text>
+          </view>
+        </view>
+      </scroll-view>
+      
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideActionsModal">取消</button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快速操作菜单 -->
+  <view class="quick-actions-modal" wx:if="{{showQuickActionsModal}}">
+    <view class="modal-mask" bindtap="hideQuickActionsModal"></view>
+    <view class="modal-content quick">
+      <view class="action-list quick">
+        <view 
+          class="action-item quick" 
+          bindtap="exportAllMaterials"
+        >
+          <image src="/assets/icons/export.svg" class="action-icon"></image>
+          <text class="action-text">导出所有素材</text>
+        </view>
+        
+        <view 
+          class="action-item quick" 
+          bindtap="importMaterials"
+        >
+          <image src="/assets/icons/import.svg" class="action-icon"></image>
+          <text class="action-text">导入素材</text>
+        </view>
+        
+        <view 
+          class="action-item quick" 
+          bindtap="manageCategories"
+        >
+          <image src="/assets/icons/category.svg" class="action-icon"></image>
+          <text class="action-text">管理分类</text>
+        </view>
+        
+        <view 
+          class="action-item quick" 
+          bindtap="showStatistics"
+        >
+          <image src="/assets/icons/statistics.svg" class="action-icon"></image>
+          <text class="action-text">查看统计</text>
+        </view>
+        
+        <view 
+          class="action-item quick" 
+          bindtap="cleanUpMaterials"
+        >
+          <image src="/assets/icons/cleanup.svg" class="action-icon"></image>
+          <text class="action-text">清理素材库</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 批量操作确认框 -->
+  <view class="batch-confirm-modal" wx:if="{{showBatchConfirmModal}}">
+    <view class="modal-mask"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <image src="/assets/icons/warning.svg" class="modal-warning-icon"></image>
+        <text class="modal-title">{{batchConfirmTitle}}</text>
+      </view>
+      
+      <view class="modal-body">
+        <text class="modal-message">{{batchConfirmMessage}}</text>
+        
+        <!-- 批量删除确认 -->
+        <view class="batch-options" wx:if="{{batchActionType === 'delete'}}">
+          <label class="batch-option">
+            <checkbox checked="{{keepUsageRecords}}" bindchange="onKeepRecordsChange" />
+            <text class="option-text">保留使用记录</text>
+          </label>
+        </view>
+        
+        <!-- 批量分类选择 -->
+        <view class="batch-category-select" wx:if="{{batchActionType === 'categorize'}}">
+          <picker 
+            mode="selector" 
+            range="{{availableCategories}}"
+            value="{{batchCategoryIndex}}"
+            bindchange="onBatchCategoryChange"
+          >
+            <view class="category-picker">
+              <text>{{batchCategoryIndex >= 0 ? availableCategories[batchCategoryIndex] : '选择分类'}}</text>
+              <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+            </view>
+          </picker>
+          
+          <view class="category-options">
+            <text class="options-title">操作类型：</text>
+            <radio-group bindchange="onCategoryOperationChange">
+              <label class="category-option">
+                <radio value="add" checked="{{categoryOperation === 'add'}}" />
+                <text class="option-text">添加到分类</text>
+              </label>
+              <label class="category-option">
+                <radio value="replace" checked="{{categoryOperation === 'replace'}}" />
+                <text class="option-text">替换分类</text>
+              </label>
+              <label class="category-option">
+                <radio value="remove" checked="{{categoryOperation === 'remove'}}" />
+                <text class="option-text">移除分类</text>
+              </label>
+            </radio-group>
+          </view>
+        </view>
+        
+        <!-- 批量标签编辑 -->
+        <view class="batch-tag-edit" wx:if="{{batchActionType === 'tag'}}">
+          <view class="tag-input-section">
+            <input 
+              class="tag-input" 
+              placeholder="输入标签，用逗号分隔"
+              value="{{batchTagInput}}"
+              bindinput="onBatchTagInput"
+            />
+            <button class="btn-add-tag" bindtap="addBatchTags">添加</button>
+          </view>
+          
+          <view class="selected-tags">
+            <block wx:for="{{batchSelectedTags}}" wx:key="index">
+              <view class="selected-tag">
+                {{item}}
+                <image 
+                  src="/assets/icons/close-small.svg" 
+                  class="tag-remove"
+                  bindtap="removeBatchTag"
+                  data-index="{{index}}"
+                ></image>
+              </view>
+            </block>
+          </view>
+          
+          <view class="tag-options">
+            <text class="options-title">操作类型：</text>
+            <radio-group bindchange="onTagOperationChange">
+              <label class="tag-option">
+                <radio value="add" checked="{{tagOperation === 'add'}}" />
+                <text class="option-text">添加标签</text>
+              </label>
+              <label class="tag-option">
+                <radio value="replace" checked="{{tagOperation === 'replace'}}" />
+                <text class="option-text">替换标签</text>
+              </label>
+            </radio-group>
+          </view>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideBatchConfirmModal">取消</button>
+        <button 
+          class="btn-modal confirm" 
+          bindtap="confirmBatchAction"
+          disabled="{{batchConfirmDisabled}}"
+        >
+          {{batchConfirmButton}}
+        </button>
+      </view>
+    </view>
+  </view>
+</view>

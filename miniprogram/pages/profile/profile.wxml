@@ -1,0 +1,653 @@
+<!-- pages/profile/profile.wxml -->
+<view class="profile-page">
+  <!-- 页面头部 -->
+  <view class="page-header">
+    <view class="header-content">
+      <image src="/assets/icons/avatar.svg" class="header-avatar"></image>
+      <view class="header-info">
+        <text class="header-name">{{userInfo.nickName || '灵材智友'}}</text>
+        <text class="header-id">ID: {{userInfo.openId ? userInfo.openId.substring(0, 8) + '...' : '未登录'}}</text>
+      </view>
+    </view>
+    <button 
+      class="btn-login" 
+      wx:if="{{!hasLogin}}"
+      bindtap="login"
+    >
+      点击登录
+    </button>
+    <button 
+      class="btn-logout" 
+      wx:if="{{hasLogin}}"
+      bindtap="logout"
+    >
+      退出登录
+    </button>
+  </view>
+
+  <!-- 数据统计面板 -->
+  <view class="stats-section">
+    <view class="section-header">
+      <image src="/assets/icons/stats.svg" class="section-icon"></image>
+      <text class="section-title">数据统计</text>
+      <text class="section-update">更新于 {{lastUpdateTime}}</text>
+    </view>
+
+    <view class="stats-grid">
+      <!-- 素材总数 -->
+      <statistics-card 
+        title="素材总数"
+        value="{{statistics.materialCount}}"
+        icon="material"
+        trend="{{statistics.materialTrend}}"
+        bindtap="viewMaterialStats"
+      />
+
+      <!-- 使用次数 -->
+      <statistics-card 
+        title="使用次数"
+        value="{{statistics.usageCount}}"
+        icon="usage"
+        trend="{{statistics.usageTrend}}"
+        bindtap="viewUsageStats"
+      />
+
+      <!-- 标签数量 -->
+      <statistics-card 
+        title="标签数量"
+        value="{{statistics.tagCount}}"
+        icon="tag"
+        trend="{{statistics.tagTrend}}"
+        bindtap="viewTagStats"
+      />
+
+      <!-- 写作成果 -->
+      <statistics-card 
+        title="写作成果"
+        value="{{statistics.writingCount}}"
+        icon="writing"
+        trend="{{statistics.writingTrend}}"
+        bindtap="viewWritingStats"
+      />
+    </view>
+
+    <!-- 详细统计链接 -->
+    <view class="stats-detail-link" bindtap="gotoStatistics">
+      <text>查看详细统计报告</text>
+      <image src="/assets/icons/arrow-right.svg" class="link-arrow"></image>
+    </view>
+  </view>
+
+  <!-- 偏好设置 -->
+  <view class="settings-section">
+    <view class="section-header">
+      <image src="/assets/icons/settings.svg" class="section-icon"></image>
+      <text class="section-title">偏好设置</text>
+    </view>
+
+    <view class="settings-list">
+      <!-- 写作设置 -->
+      <setting-item 
+        title="写作偏好"
+        description="默认写作类型、风格和读者"
+        icon="write"
+        bindtap="editWritingSettings"
+      />
+
+      <!-- 标签设置 -->
+      <setting-item 
+        title="标签管理"
+        description="管理印象标签和分类标签"
+        icon="tag"
+        bindtap="manageTags"
+      />
+
+      <!-- 分类设置 -->
+      <setting-item 
+        title="分类管理"
+        description="自定义素材分类体系"
+        icon="category"
+        bindtap="manageCategories"
+      />
+
+      <!-- 模板设置 -->
+      <setting-item 
+        title="模板管理"
+        description="管理写作模板和范例"
+        icon="template"
+        bindtap="manageTemplates"
+      />
+
+      <!-- 通知设置 -->
+      <setting-item 
+        title="通知设置"
+        description="提醒和推送通知"
+        icon="notification"
+        bindtap="editNotificationSettings"
+      />
+
+      <!-- 隐私设置 -->
+      <setting-item 
+        title="隐私设置"
+        description="数据可见性和分享设置"
+        icon="privacy"
+        bindtap="editPrivacySettings"
+      />
+    </view>
+  </view>
+
+  <!-- 存储空间 -->
+  <view class="storage-section">
+    <view class="section-header">
+      <image src="/assets/icons/storage.svg" class="section-icon"></image>
+      <text class="section-title">存储空间</text>
+      <text class="storage-usage">{{storage.used}} / {{storage.total}}</text>
+    </view>
+
+    <!-- 存储进度条 -->
+    <storage-progress 
+      used="{{storage.usedBytes}}"
+      total="{{storage.totalBytes}}"
+      percent="{{storage.percent}}"
+      status="{{storage.status}}"
+    />
+
+    <!-- 存储详情 -->
+    <view class="storage-details">
+      <view class="storage-item">
+        <text class="storage-label">素材数据</text>
+        <text class="storage-value">{{storage.materials}}</text>
+        <text class="storage-percent">{{storage.materialsPercent}}%</text>
+      </view>
+      
+      <view class="storage-item">
+        <text class="storage-label">模板文件</text>
+        <text class="storage-value">{{storage.templates}}</text>
+        <text class="storage-percent">{{storage.templatesPercent}}%</text>
+      </view>
+      
+      <view class="storage-item">
+        <text class="storage-label">缓存数据</text>
+        <text class="storage-value">{{storage.cache}}</text>
+        <text class="storage-percent">{{storage.cachePercent}}%</text>
+      </view>
+      
+      <view class="storage-item">
+        <text class="storage-label">其他数据</text>
+        <text class="storage-value">{{storage.others}}</text>
+        <text class="storage-percent">{{storage.othersPercent}}%</text>
+      </view>
+    </view>
+
+    <!-- 存储操作 -->
+    <view class="storage-actions">
+      <button 
+        class="btn-storage clear-cache" 
+        bindtap="clearCache"
+        loading="{{isClearingCache}}"
+      >
+        清理缓存
+      </button>
+      <button 
+        class="btn-storage export-data" 
+        bindtap="exportAllData"
+      >
+        备份数据
+      </button>
+      <button 
+        class="btn-storage upgrade" 
+        bindtap="upgradeStorage"
+        wx:if="{{storage.percent > 80}}"
+      >
+        扩容空间
+      </button>
+    </view>
+  </view>
+
+  <!-- 账号与安全 -->
+  <view class="account-section">
+    <view class="section-header">
+      <image src="/assets/icons/account.svg" class="section-icon"></image>
+      <text class="section-title">账号与安全</text>
+    </view>
+
+    <view class="account-list">
+      <view class="account-item" bindtap="viewAccountInfo">
+        <image src="/assets/icons/profile.svg" class="account-icon"></image>
+        <view class="account-content">
+          <text class="account-title">账号信息</text>
+          <text class="account-desc">查看和编辑个人信息</text>
+        </view>
+        <image src="/assets/icons/arrow-right.svg" class="account-arrow"></image>
+      </view>
+
+      <view class="account-item" bindtap="viewSecurity">
+        <image src="/assets/icons/security.svg" class="account-icon"></image>
+        <view class="account-content">
+          <text class="account-title">安全设置</text>
+          <text class="account-desc">密码、登录设备管理</text>
+        </view>
+        <image src="/assets/icons/arrow-right.svg" class="account-arrow"></image>
+      </view>
+
+      <view class="account-item" bindtap="viewSubscription">
+        <image src="/assets/icons/subscription.svg" class="account-icon"></image>
+        <view class="account-content">
+          <text class="account-title">订阅管理</text>
+          <text class="account-desc">查看订阅状态和权益</text>
+        </view>
+        <image src="/assets/icons/arrow-right.svg" class="account-arrow"></image>
+      </view>
+    </view>
+  </view>
+
+  <!-- 关于与帮助 -->
+  <view class="about-section">
+    <view class="section-header">
+      <image src="/assets/icons/about.svg" class="section-icon"></image>
+      <text class="section-title">关于与帮助</text>
+    </view>
+
+    <view class="about-list">
+      <view class="about-item" bindtap="showUserGuide">
+        <image src="/assets/icons/guide.svg" class="about-icon"></image>
+        <text class="about-text">使用指南</text>
+      </view>
+
+      <view class="about-item" bindtap="showTutorials">
+        <image src="/assets/icons/tutorial.svg" class="about-icon"></image>
+        <text class="about-text">视频教程</text>
+      </view>
+
+      <view class="about-item" bindtap="viewFAQ">
+        <image src="/assets/icons/faq.svg" class="about-icon"></image>
+        <text class="about-text">常见问题</text>
+      </view>
+
+      <view class="about-item" bindtap="feedback">
+        <image src="/assets/icons/feedback.svg" class="about-icon"></image>
+        <text class="about-text">意见反馈</text>
+      </view>
+
+      <view class="about-item" bindtap="contactUs">
+        <image src="/assets/icons/contact.svg" class="about-icon"></image>
+        <text class="about-text">联系我们</text>
+      </view>
+
+      <view class="about-item" bindtap="aboutApp">
+        <image src="/assets/icons/info.svg" class="about-icon"></image>
+        <text class="about-text">关于灵材智库</text>
+      </view>
+    </view>
+
+    <!-- 版本信息 -->
+    <view class="version-info">
+      <text class="version-text">版本 {{appVersion}}</text>
+      <text class="version-check" bindtap="checkUpdate">检查更新</text>
+    </view>
+  </view>
+
+  <!-- 底部操作栏 -->
+  <view class="bottom-actions">
+    <button 
+      class="btn-bottom feedback" 
+      bindtap="quickFeedback"
+    >
+      快捷反馈
+    </button>
+    <button 
+      class="btn-bottom share" 
+      bindtap="shareApp"
+    >
+      分享应用
+    </button>
+    <button 
+      class="btn-bottom donate" 
+      bindtap="supportUs"
+      wx:if="{{!isVIP}}"
+    >
+      支持我们
+    </button>
+  </view>
+
+  <!-- 登录模态框 -->
+  <view class="modal-login" wx:if="{{showLoginModal}}">
+    <view class="modal-mask" bindtap="hideLoginModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">登录灵材智库</text>
+        <text class="modal-subtitle">登录后可以云同步您的素材和数据</text>
+      </view>
+      
+      <view class="modal-body">
+        <!-- 微信登录 -->
+        <button 
+          class="btn-login-wechat" 
+          open-type="getUserInfo"
+          bindgetuserinfo="onGetUserInfo"
+        >
+          <image src="/assets/icons/wechat.svg" class="login-icon"></image>
+          <text class="login-text">微信一键登录</text>
+        </button>
+
+        <!-- 其他登录方式 -->
+        <view class="login-options">
+          <text class="options-title">其他登录方式</text>
+          <view class="options-list">
+            <button class="btn-login-option" bindtap="loginWithPhone">
+              <image src="/assets/icons/phone.svg" class="option-icon"></image>
+              <text>手机号登录</text>
+            </button>
+            <button class="btn-login-option" bindtap="loginWithEmail">
+              <image src="/assets/icons/email.svg" class="option-icon"></image>
+              <text>邮箱登录</text>
+            </button>
+          </view>
+        </view>
+
+        <!-- 协议同意 -->
+        <view class="agreement">
+          <label class="agreement-checkbox">
+            <checkbox 
+              checked="{{agreeAgreement}}" 
+              bindchange="onAgreementChange"
+            />
+            <text class="agreement-text">
+              我已阅读并同意
+              <text class="agreement-link" bindtap="viewUserAgreement">《用户协议》</text>
+              和
+              <text class="agreement-link" bindtap="viewPrivacyPolicy">《隐私政策》</text>
+            </text>
+          </label>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button 
+          class="btn-modal skip" 
+          bindtap="skipLogin"
+        >
+          暂不登录
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 设置编辑模态框 -->
+  <view class="modal-settings" wx:if="{{showSettingsModal}}">
+    <view class="modal-mask" bindtap="hideSettingsModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">{{settingsModalTitle}}</text>
+        <button class="btn-modal-save" bindtap="saveSettings">
+          保存
+        </button>
+      </view>
+      
+      <scroll-view class="modal-body" scroll-y="{{true}}">
+        <!-- 动态加载设置内容 -->
+        <view wx:if="{{settingsType === 'writing'}}">
+          <!-- 写作设置表单 -->
+          <view class="setting-form">
+            <view class="form-item">
+              <text class="form-label">默认写作类型</text>
+              <picker 
+                mode="selector" 
+                range="{{writingTypes}}"
+                value="{{defaultWritingType}}"
+                bindchange="onWritingTypeChange"
+              >
+                <view class="form-picker">
+                  <text>{{writingTypes[defaultWritingType]}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">默认读者</text>
+              <picker 
+                mode="selector" 
+                range="{{audienceTypes}}"
+                value="{{defaultAudienceType}}"
+                bindchange="onAudienceTypeChange"
+              >
+                <view class="form-picker">
+                  <text>{{audienceTypes[defaultAudienceType]}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">默认风格</text>
+              <picker 
+                mode="selector" 
+                range="{{styleTypes}}"
+                value="{{defaultStyleType}}"
+                bindchange="onStyleTypeChange"
+              >
+                <view class="form-picker">
+                  <text>{{styleTypes[defaultStyleType]}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">指令详细度</text>
+              <slider 
+                min="1" 
+                max="5" 
+                value="{{promptDetailLevel}}" 
+                show-value="{{true}}"
+                bindchange="onPromptDetailChange"
+              />
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">默认素材引用数</text>
+              <slider 
+                min="1" 
+                max="10" 
+                value="{{defaultMaterialCount}}" 
+                show-value="{{true}}"
+                bindchange="onMaterialCountChange"
+              />
+            </view>
+          </view>
+        </view>
+
+        <!-- 通知设置 -->
+        <view wx:if="{{settingsType === 'notification'}}">
+          <view class="setting-form">
+            <view class="form-item switch">
+              <text class="form-label">素材收集提醒</text>
+              <switch 
+                checked="{{notification.collectReminder}}" 
+                bindchange="onCollectReminderChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item switch">
+              <text class="form-label">定期整理提醒</text>
+              <switch 
+                checked="{{notification.organizeReminder}}" 
+                bindchange="onOrganizeReminderChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item switch">
+              <text class="form-label">写作成果通知</text>
+              <switch 
+                checked="{{notification.writingNotification}}" 
+                bindchange="onWritingNotificationChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item switch">
+              <text class="form-label">系统更新通知</text>
+              <switch 
+                checked="{{notification.updateNotification}}" 
+                bindchange="onUpdateNotificationChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">通知时间段</text>
+              <picker 
+                mode="time" 
+                value="{{notification.timeRangeStart}}"
+                start="08:00"
+                end="22:00"
+                bindchange="onTimeRangeStartChange"
+              >
+                <view class="form-picker">
+                  <text>{{notification.timeRangeStart}} - {{notification.timeRangeEnd}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+          </view>
+        </view>
+
+        <!-- 隐私设置 -->
+        <view wx:if="{{settingsType === 'privacy'}}">
+          <view class="setting-form">
+            <view class="form-item switch">
+              <text class="form-label">数据云同步</text>
+              <switch 
+                checked="{{privacy.cloudSync}}" 
+                bindchange="onCloudSyncChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item switch">
+              <text class="form-label">匿名分享素材</text>
+              <switch 
+                checked="{{privacy.anonymousShare}}" 
+                bindchange="onAnonymousShareChange"
+                color="#fa8c16"
+              />
+            </view>
+
+            <view class="form-item switch">
+              <text class="form-label">贡献使用数据</text>
+              <switch 
+                checked="{{privacy.contributeData}}" 
+                bindchange="onContributeDataChange"
+                color="#fa8c16"
+              />
+              <text class="form-hint">匿名贡献数据帮助我们改进产品</text>
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">数据自动清理</text>
+              <picker 
+                mode="selector" 
+                range="{{cleanupOptions}}"
+                value="{{privacy.autoCleanup}}"
+                bindchange="onAutoCleanupChange"
+              >
+                <view class="form-picker">
+                  <text>{{cleanupOptions[privacy.autoCleanup]}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+
+            <view class="form-item">
+              <text class="form-label">导出数据格式</text>
+              <picker 
+                mode="selector" 
+                range="{{exportFormats}}"
+                value="{{privacy.exportFormat}}"
+                bindchange="onExportFormatChange"
+              >
+                <view class="form-picker">
+                  <text>{{exportFormats[privacy.exportFormat]}}</text>
+                  <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
+                </view>
+              </picker>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <!-- 清理缓存确认 -->
+  <view class="modal-clear-cache" wx:if="{{showClearCacheModal}}">
+    <view class="modal-mask" bindtap="hideClearCacheModal"></view>
+    <view class="modal-content">
+      <view class="modal-header">
+        <text class="modal-title">清理缓存</text>
+      </view>
+      
+      <view class="modal-body">
+        <text class="modal-message">
+          确定要清理缓存数据吗？这将删除：
+        </text>
+        
+        <view class="cache-list">
+          <view class="cache-item">
+            <image src="/assets/icons/cache-temp.svg" class="cache-icon"></image>
+            <view class="cache-content">
+              <text class="cache-title">临时文件</text>
+              <text class="cache-desc">预览图片、临时生成的文件</text>
+            </view>
+            <text class="cache-size">{{cacheSizes.temp}} MB</text>
+          </view>
+          
+          <view class="cache-item">
+            <image src="/assets/icons/cache-log.svg" class="cache-icon"></image>
+            <view class="cache-content">
+              <text class="cache-title">日志文件</text>
+              <text class="cache-desc">操作日志、错误日志</text>
+            </view>
+            <text class="cache-size">{{cacheSizes.logs}} MB</text>
+          </view>
+          
+          <view class="cache-item">
+            <image src="/assets/icons/cache-image.svg" class="cache-icon"></image>
+            <view class="cache-content">
+              <text class="cache-title">图片缓存</text>
+              <text class="cache-desc">已下载的图片资源</text>
+            </view>
+            <text class="cache-size">{{cacheSizes.images}} MB</text>
+          </view>
+        </view>
+        
+        <view class="cache-total">
+          <text class="total-label">总计：</text>
+          <text class="total-size">{{cacheSizes.total}} MB</text>
+        </view>
+      </view>
+      
+      <view class="modal-footer">
+        <button class="btn-modal cancel" bindtap="hideClearCacheModal">
+          取消
+        </button>
+        <button 
+          class="btn-modal confirm" 
+          bindtap="confirmClearCache"
+        >
+          确认清理
+        </button>
+      </view>
+    </view>
+  </view>
+
+  <!-- 反馈成功提示 -->
+  <view class="toast-success" wx:if="{{showSuccessToast}}">
+    <view class="toast-content">
+      <image src="/assets/icons/success.svg" class="toast-icon"></image>
+      <text class="toast-message">{{successMessage}}</text>
+    </view>
+  </view>
+</view>

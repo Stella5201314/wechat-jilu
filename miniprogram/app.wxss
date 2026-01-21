@@ -1,0 +1,92 @@
+/* miniprogram/app.wxss */
+
+/* 基础样式重置 */
+page {
+  background-color: #f8f9fa;
+  font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, sans-serif;
+}
+
+/* 常用工具类 */
+.container {
+  padding: 20rpx;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.justify-between {
+  justify-content: space-between;
+}
+
+.align-center {
+  align-items: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-overflow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 按钮样式 */
+.primary-button {
+  background-color: #07c160;
+  color: white;
+  border-radius: 8rpx;
+  padding: 20rpx 40rpx;
+}
+
+.primary-button:active {
+  background-color: #06ad56;
+}
+
+.secondary-button {
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 8rpx;
+  padding: 20rpx 40rpx;
+}
+
+/* 卡片样式 */
+.card {
+  background-color: white;
+  border-radius: 16rpx;
+  padding: 30rpx;
+  margin: 20rpx;
+  box-shadow: 0 2rpx 12rpx rgba(0, 0, 0, 0.05);
+}
+
+/* 输入框样式 */
+.input {
+  background-color: white;
+  border: 1rpx solid #e0e0e0;
+  border-radius: 8rpx;
+  padding: 20rpx;
+  font-size: 28rpx;
+}
+
+/* 加载样式 */
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 60rpx 0;
+}
+
+.loading-text {
+  color: #999;
+  font-size: 26rpx;
+  margin-left: 20rpx;
+}
