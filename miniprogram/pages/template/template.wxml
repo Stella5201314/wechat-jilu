@@ -1,0 +1,33 @@
+<view class="page">
+  <header-nav title="模板中心"></header-nav>
+
+  <view class="container">
+    <view class="toolbar">
+      <input class="input search-input" placeholder="搜索模板（名称/描述）" bindinput="onSearchInput" value="{{query}}" />
+      <button class="btn-plain" bindtap="onSearch">搜索</button>
+    </view>
+
+    <scroll-view class="tpl-list" scroll-y="true" style="height:calc(100vh - 260rpx);">
+      <block wx:for="{{templates}}" wx:key="{{item._id || item.id}}">
+        <view class="card">
+          <view style="display:flex; justify-content:space-between; align-items:center;">
+            <view>
+              <text style="font-weight:700; font-size:30rpx;">{{item.name}}</text>
+              <text style="color:var(--text-secondary); font-size:26rpx; margin-top:6rpx;">{{item.type}}</text>
+            </view>
+            <view style="display:flex; gap:10rpx;">
+              <button data-id="{{item._id || item.id}}" bindtap="onPreview" class="btn-plain">预览</button>
+              <button data-id="{{item._id || item.id}}" bindtap="onApply" class="btn-primary">应用</button>
+            </view>
+          </view>
+
+          <view style="margin-top:12rpx; color:var(--text-secondary); font-size:28rpx;">
+            <text class="prewrap">{{item.description}}</text>
+          </view>
+        </view>
+      </block>
+    </scroll-view>
+  </view>
+
+  <bottom-tabs current="library"></bottom-tabs>
+</view>

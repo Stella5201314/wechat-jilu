@@ -1,12 +1,6 @@
 {
   "usingComponents": {
-    "statistics-card": "/components/business/statistics-card/statistics-card",
-    "setting-item": "/components/business/setting-item/setting-item",
-    "storage-progress": "/components/business/storage-progress/storage-progress"
-  },
-  "navigationBarTitleText": "个人中心",
-  "navigationBarBackgroundColor": "#fa8c16",
-  "navigationBarTextStyle": "white",
-  "backgroundColor": "#f5f5f5",
-  "enablePullDownRefresh": false
+    "header-nav": "../../components/layout/header-nav/header-nav",
+    "bottom-tabs": "../../components/layout/bottom-tabs/bottom-tabs"
+  }
 }

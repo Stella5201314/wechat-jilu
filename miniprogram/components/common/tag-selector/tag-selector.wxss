@@ -1,0 +1,3 @@
+.tag-row { display:flex; gap:8px; padding:6px 8px; }
+.tag-item { padding:6px 10px; background:#fff; border-radius:16px; border:1px solid #eee; color:#333; font-size:13px; }
+.tag-item.selected { background:#1aad19; color:#fff; border-color:#1aad19; }

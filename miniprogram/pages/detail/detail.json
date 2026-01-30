@@ -1,14 +1,7 @@
 {
   "usingComponents": {
-    "material-card": "/components/business/material-card/material-card",
-    "tag-editor": "/components/business/tag-editor/tag-editor",
-    "source-viewer": "/components/business/source-viewer/source-viewer",
-    "usage-history": "/components/business/usage-history/usage-history",
-    "analysis-panel": "/components/business/analysis-panel/analysis-panel"
-  },
-  "navigationBarTitleText": "素材详情",
-  "navigationBarBackgroundColor": "#1890ff",
-  "navigationBarTextStyle": "white",
-  "backgroundColor": "#f5f5f5",
-  "enablePullDownRefresh": true
+    "header-nav": "../../components/layout/header-nav/header-nav",
+    "bottom-tabs": "../../components/layout/bottom-tabs/bottom-tabs",
+    "prompt-preview": "../../components/common/prompt-preview/prompt-preview"
+  }
 }

@@ -1,0 +1,6 @@
+<view class="tabs">
+  <view class="tab {{current==='home' ? 'active' : ''}}" data-path="/pages/index/index" bindtap="onSwitch">首页</view>
+  <view class="tab {{current==='collect' ? 'active' : ''}}" data-path="/pages/collect/collect" bindtap="onSwitch">采集</view>
+  <view class="tab {{current==='library' ? 'active' : ''}}" data-path="/pages/library/library" bindtap="onSwitch">素材库</view>
+  <view class="tab {{current==='profile' ? 'active' : ''}}" data-path="/pages/profile/profile" bindtap="onSwitch">我的</view>
+</view>

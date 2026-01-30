@@ -1,61 +1,55 @@
 {
   "pages": [
     "pages/index/index",
+    "pages/collect/collect",
     "pages/library/library",
     "pages/detail/detail",
     "pages/template/template",
-    "pages/profile/profile",
-    "pages/guide/guide",
-    "pages/collect/collect"
+    "pages/profile/profile"
   ],
   "window": {
     "backgroundTextStyle": "light",
-    "navigationBarBackgroundColor": "#fff",
-    "navigationBarTitleText": "写作AI助手",
-    "navigationBarTextStyle": "black",
-    "backgroundColor": "#f8f9fa"
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "灵材智库",
+    "navigationBarTextStyle": "black"
   },
   "tabBar": {
-    "color": "#999999",
-    "selectedColor": "#07c160",
+    "color": "#666666",
+    "selectedColor": "#1aad19",
     "backgroundColor": "#ffffff",
-    "borderStyle": "black",
+    "borderStyle": "white",
     "list": [
       {
         "pagePath": "pages/index/index",
         "text": "首页",
-        "iconPath": "images/home.png",
-        "selectedIconPath": "images/home-active.png"
+        "iconPath": "assets/icons/home.png",
+        "selectedIconPath": "assets/icons/home-active.png"
       },
       {
-        "pagePath": "pages/material/material",
+        "pagePath": "pages/collect/collect",
+        "text": "采集",
+        "iconPath": "assets/icons/collect.png",
+        "selectedIconPath": "assets/icons/collect-active.png"
+      },
+      {
+        "pagePath": "pages/library/library",
         "text": "素材库",
-        "iconPath": "images/material.png",
-        "selectedIconPath": "images/material-active.png"
+        "iconPath": "assets/icons/library.png",
+        "selectedIconPath": "assets/icons/library-active.png"
       },
       {
-        "pagePath": "pages/write/write",
-        "text": "写作",
-        "iconPath": "images/write.png",
-        "selectedIconPath": "images/write-active.png"
-      },
-      {
-        "pagePath": "pages/history/history",
-        "text": "历史",
-        "iconPath": "images/history.png",
-        "selectedIconPath": "images/history-active.png"
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/icons/profile.png",
+        "selectedIconPath": "assets/icons/profile-active.png"
       }
     ]
   },
-  "permission": {
-    "scope.camera": {
-      "desc": "需要访问摄像头拍照上传素材"
-    },
-    "scope.writePhotosAlbum": {
-      "desc": "需要保存图片到相册"
-    }
+  "networkTimeout": {
+    "request": 10000,
+    "connectSocket": 10000,
+    "uploadFile": 60000,
+    "downloadFile": 60000
   },
-  "style": "v2",
-  "sitemapLocation": "sitemap.json",
-  "lazyCodeLoading": "requiredComponents"
+  "debug": false
 }

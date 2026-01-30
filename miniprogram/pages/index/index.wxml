@@ -1,361 +1,55 @@
-<!-- pages/index/index.wxml -->
-<view class="writing-workspace">
-  
-  <!-- 顶部导航区 -->
-  <view class="top-nav">
-    <view class="logo">
-      <image src="/assets/icons/logo.svg" class="logo-icon"></image>
-      <text class="logo-text">灵材智库</text>
-    </view>
-    <view class="nav-actions">
-      <button class="btn-nav" bindtap="onNewWriting">
-        <image src="/assets/icons/add.svg" class="btn-icon"></image>
-        <text>新建写作</text>
-      </button>
-      <button class="btn-nav" bindtap="gotoTemplate">
-        <image src="/assets/icons/template.svg" class="btn-icon"></image>
-        <text>模板库</text>
-      </button>
-      <button class="btn-nav" bindtap="gotoCollect">
-        <image src="/assets/icons/collect.svg" class="btn-icon"></image>
-        <text>收集素材</text>
-      </button>
-    </view>
-  </view>
+<view class="page">
+  <header-nav title="灵材智库"></header-nav>
 
-  <!-- 三栏主工作区 -->
-  <view class="main-workspace {{isMobile ? 'mobile-layout' : ''}}">
-    
-    <!-- 左侧栏：写作控制面板 -->
-    <scroll-view class="left-panel control-panel" scroll-y="{{true}}" enhanced="{{true}}">
-      
-      <!-- 1. 需求配置区 -->
-      <view class="config-section card">
-        <view class="section-header">
-          <image src="/assets/icons/target.svg" class="section-icon"></image>
-          <text class="section-title">写作目标</text>
-        </view>
-        
-        <textarea 
-          class="requirement-input" 
-          placeholder="请输入写作主题和要求（例如：撰写一份关于智慧城市建设的季度工作报告，面向市级领导，要求数据详实、重点突出）..." 
-          value="{{requirement}}"
-          bindinput="onRequirementChange"
-          maxlength="500"
-          auto-height="{{true}}"
-        />
-        
-        <view class="character-count">
-          <text>{{requirement.length}}/500</text>
-        </view>
+  <view class="container">
+    <view class="main-row">
+      <writing-sidebar
+        bind:submit="onSidebarSubmit"
+        bind:aiSuggest="onAiSuggest"
+      ></writing-sidebar>
 
-        <!-- 快速配置项 -->
-        <view class="quick-config">
-          <view class="config-item">
-            <text class="config-label">写作类型</text>
-            <picker 
-              class="config-picker" 
-              mode="selector" 
-              range="{{writingTypes}}" 
-              value="{{writingTypeIndex}}"
-              bindchange="onWritingTypeChange"
-            >
-              <view class="picker-view">
-                <text>{{writingTypes[writingTypeIndex] || '请选择类型'}}</text>
-                <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
-              </view>
-            </picker>
-          </view>
-
-          <view class="config-item">
-            <text class="config-label">目标读者</text>
-            <picker 
-              class="config-picker" 
-              mode="selector" 
-              range="{{audienceTypes}}" 
-              value="{{audienceTypeIndex}}"
-              bindchange="onAudienceTypeChange"
-            >
-              <view class="picker-view">
-                <text>{{audienceTypes[audienceTypeIndex] || '请选择读者'}}</text>
-                <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
-              </view>
-            </picker>
-          </view>
-
-          <view class="config-item">
-            <text class="config-label">写作风格</text>
-            <picker 
-              class="config-picker" 
-              mode="selector" 
-              range="{{styleTypes}}" 
-              value="{{styleTypeIndex}}"
-              bindchange="onStyleTypeChange"
-            >
-              <view class="picker-view">
-                <text>{{styleTypes[styleTypeIndex] || '请选择风格'}}</text>
-                <image src="/assets/icons/arrow-down.svg" class="picker-arrow"></image>
-              </view>
-            </picker>
-          </view>
-        </view>
-      </view>
-
-      <!-- 2. 提纲生成区 -->
-      <view class="config-section card">
-        <view class="section-header">
-          <image src="/assets/icons/outline.svg" class="section-icon"></image>
-          <text class="section-title">智能提纲</text>
-          <view class="section-actions">
-            <button 
-              class="btn-outline-generate" 
-              size="mini" 
-              bindtap="generateOutline"
-              loading="{{isGeneratingOutline}}"
-              disabled="{{!requirement}}"
-            >
-              {{isGeneratingOutline ? '生成中...' : '生成提纲'}}
-            </button>
-            <button 
-              class="btn-outline-clear" 
-              size="mini" 
-              plain 
-              bindtap="clearOutline"
-              disabled="{{outline.length === 0}}"
-            >
-              清空
-            </button>
-          </view>
-        </view>
-        
-        <view class="outline-container">
-          <!-- 使用自定义组件 -->
-          <outline-editor 
-            outline="{{outline}}"
-            current-node="{{currentOutlineNode}}"
-            bindnodeclick="onOutlineNodeClick"
-            bindnodeedit="onOutlineNodeEdit"
-            bindnodedelete="onOutlineNodeDelete"
-          />
-          
-          <!-- 空状态 -->
-          <view class="empty-state" wx:if="{{outline.length === 0}}">
-            <image src="/assets/images/empty-outline.svg" class="empty-image"></image>
-            <text class="empty-text">暂无提纲</text>
-            <text class="empty-hint">请先生成提纲或从模板库选择</text>
-          </view>
-        </view>
-      </view>
-
-      <!-- 3. 生成控制区 -->
-      <view class="config-section card">
-        <view class="section-header">
-          <image src="/assets/icons/generate.svg" class="section-icon"></image>
-          <text class="section-title">生成控制</text>
-        </view>
-        
-        <view class="generation-options">
-          <view class="option-item">
-            <text class="option-label">指令详细度</text>
-            <slider 
-              min="1" 
-              max="5" 
-              value="{{promptDetailLevel}}" 
-              show-value="{{true}}"
-              bindchange="onPromptDetailChange"
-            />
-          </view>
-          
-          <view class="option-item">
-            <text class="option-label">引用素材数</text>
-            <slider 
-              min="1" 
-              max="10" 
-              value="{{materialCount}}" 
-              show-value="{{true}}"
-              bindchange="onMaterialCountChange"
-            />
-          </view>
-        </view>
-
-        <view class="action-buttons">
-          <button 
-            class="btn-generate-primary" 
-            type="primary" 
-            bindtap="generateFinalPrompt"
-            loading="{{isGeneratingPrompt}}"
-            disabled="{{outline.length === 0}}"
-          >
-            {{isGeneratingPrompt ? '生成中...' : '生成完整指令'}}
-          </button>
-          
-          <view class="secondary-actions">
-            <button 
-              class="btn-save-template" 
-              bindtap="saveAsTemplate"
-              disabled="{{!finalPrompt}}"
-            >
-              保存为模板
-            </button>
-            <button 
-              class="btn-clear-all" 
-              bindtap="clearAll"
-            >
-              清空重来
-            </button>
-          </view>
-        </view>
-      </view>
-    </scroll-view>
-
-    <!-- 中栏：Prompt生成区 -->
-    <scroll-view class="center-panel prompt-panel" scroll-y="{{true}}">
-      <!-- 使用自定义组件 -->
-      <prompt-preview 
-        prompt="{{finalPrompt}}"
-        is-generating="{{isGeneratingPrompt}}"
-        bindcopy="onCopyPrompt"
-        bindformat="onFormatPrompt"
-        bindexport="onExportPrompt"
-      />
-      
-      <!-- 使用说明 -->
-      <view class="usage-guide card">
-        <view class="guide-header">
-          <image src="/assets/icons/guide.svg" class="guide-icon"></image>
-          <text class="guide-title">使用指南</text>
-        </view>
-        
-        <view class="guide-steps">
-          <view class="step-item">
-            <text class="step-number">1</text>
-            <view class="step-content">
-              <text class="step-title">复制指令</text>
-              <text class="step-desc">点击上方"复制全文"按钮，将生成的指令复制到剪贴板</text>
+      <view class="content">
+        <view class="toolbar toolbar--space">
+          <view class="toolbar-left">
+            <!-- 标签行：每个标签旁放一个小信息图标，点击会弹出该标签的说明 -->
+            <view class="tag-row">
+              <block wx:for="{{tagPool}}" wx:key="name">
+                <view class="{{item.selected ? 'chip chip--active' : 'chip'}}" data-name="{{item.name}}" bindtap="toggleTag">
+                  <text class="chip-text">{{item.name}}</text>
+                  <image src="/assets/icons/info.png" class="chip-info" data-name="{{item.name}}" bindtap="onTagInfoTap" />
+                </view>
+              </block>
             </view>
           </view>
-          
-          <view class="step-item">
-            <text class="step-number">2</text>
-            <view class="step-content">
-              <text class="step-title">粘贴到AI</text>
-              <text class="step-desc">打开DeepSeek、ChatGPT等AI工具，粘贴指令并发送</text>
-            </view>
-          </view>
-          
-          <view class="step-item">
-            <text class="step-number">3</text>
-            <view class="step-content">
-              <text class="step-title">调整优化</text>
-              <text class="step-desc">根据AI返回的结果，可回到此处调整素材或重新生成</text>
-            </view>
+
+          <view class="toolbar-right">
+            <view class="btn-plain small" bindtap="fetchMaterials">刷新</view>
+            <view class="btn-plain small" bindtap="onAiSuggest">灵感</view>
           </view>
         </view>
-      </view>
-    </scroll-view>
 
-    <!-- 右侧栏：智能素材侧边栏 -->
-    <scroll-view class="right-panel material-sidebar" scroll-y="{{true}}">
-      <!-- 使用自定义组件 -->
-      <writing-sidebar 
-        active-tab="{{activeTab}}"
-        current-node="{{currentOutlineNode}}"
-        outline="{{outline}}"
-        matched-materials="{{matchedMaterials}}"
-        cross-inspirations="{{crossInspirations}}"
-        selected-materials="{{selectedMaterials}}"
-        bindtabchange="onTabChange"
-        bindmaterialselect="onMaterialSelect"
-        bindmaterialdeselect="onMaterialDeselect"
-        bindinspirationapply="onInspirationApply"
-        bindfilterchange="onFilterChange"
-      />
-    </scroll-view>
-  </view>
-
-  <!-- 底部状态栏 -->
-  <view class="bottom-status">
-    <view class="status-items">
-      <view class="status-item">
-        <image src="/assets/icons/material.svg" class="status-icon"></image>
-        <text class="status-text">素材：{{selectedCount}}/{{materialCount}}</text>
-      </view>
-      <view class="status-item">
-        <image src="/assets/icons/length.svg" class="status-icon"></image>
-        <text class="status-text">指令：{{promptLength}}字符</text>
-      </view>
-      <view class="status-item">
-        <image src="/assets/icons/time.svg" class="status-icon"></image>
-        <text class="status-text">用时：{{generationTime}}s</text>
-      </view>
-    </view>
-    
-    <button 
-      class="btn-quick-copy" 
-      size="mini" 
-      bindtap="quickCopy"
-      disabled="{{!finalPrompt}}"
-    >
-      一键复制
-    </button>
-  </view>
-
-  <!-- 模态对话框：保存模板 -->
-  <view class="modal-template" wx:if="{{showTemplateModal}}">
-    <view class="modal-mask" bindtap="closeTemplateModal"></view>
-    <view class="modal-content">
-      <view class="modal-header">
-        <text class="modal-title">保存为模板</text>
-        <image 
-          src="/assets/icons/close.svg" 
-          class="modal-close" 
-          bindtap="closeTemplateModal"
-        ></image>
-      </view>
-      
-      <view class="modal-body">
-        <input 
-          class="template-name-input" 
-          placeholder="请输入模板名称" 
-          value="{{templateName}}"
-          bindinput="onTemplateNameChange"
-        />
-        
-        <textarea 
-          class="template-desc-input" 
-          placeholder="模板描述（可选）" 
-          value="{{templateDescription}}"
-          bindinput="onTemplateDescChange"
-          maxlength="100"
-        />
-        
-        <view class="template-tags">
-          <text class="tags-label">选择标签：</text>
-          <view class="tags-list">
-            <block wx:for="{{templateTags}}">
-              <view 
-                class="tag-item {{templateSelectedTags.indexOf(item) > -1 ? 'selected' : ''}}"
-                bindtap="toggleTemplateTag"
-                data-tag="{{item}}"
-              >
-                {{item}}
-              </view>
-            </block>
-          </view>
+        <view class="material-list">
+          <block wx:for="{{materials}}" wx:key="_id">
+            <material-card
+              material="{{item}}"
+              bind:view="onViewMaterial"
+              bind:select="onSelectMaterial"
+            ></material-card>
+          </block>
         </view>
-      </view>
-      
-      <view class="modal-footer">
-        <button class="btn-modal-cancel" bindtap="closeTemplateModal">取消</button>
-        <button 
-          class="btn-modal-confirm" 
-          type="primary" 
-          bindtap="confirmSaveTemplate"
-          disabled="{{!templateName}}"
-        >
-          保存
-        </button>
+
+        <view class="generate-wrap">
+          <view class="btn-primary large" bindtap="onGeneratePrompt">生成 Prompt</view>
+        </view>
       </view>
     </view>
   </view>
+
+  <prompt-preview
+    visible="{{promptVisible}}"
+    prompt="{{currentPrompt}}"
+    bind:close="onClosePrompt"
+  ></prompt-preview>
+
+  <bottom-tabs current="home"></bottom-tabs>
 </view>

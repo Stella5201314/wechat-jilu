@@ -1,0 +1,17 @@
+<view wx:if="{{visible}}" class="overlay">
+  <view class="dialog">
+    <view class="dialog-header">
+      <text class="title">Prompt 预览</text>
+      <button class="close" bindtap="onClose">关闭</button>
+    </view>
+
+    <scroll-view class="dialog-body">
+      <text class="prompt-text prewrap">{{prompt}}</text>
+    </scroll-view>
+
+    <view class="dialog-footer">
+      <button bindtap="onCopy">复制</button>
+      <button bindtap="onShare">分享</button>
+    </view>
+  </view>
+</view>

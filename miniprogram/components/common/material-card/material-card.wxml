@@ -1,0 +1,24 @@
+<view class="card" bindtap="onView">
+  <view class="card-header">
+    <text class="title">{{material.title}}</text>
+    <view class="meta">
+      <text class="source">{{material.source || '来源未知'}}</text>
+      <text class="time">{{formatTime(material.created_at)}}</text>
+    </view>
+  </view>
+
+  <view class="card-body">
+    <text class="snippet prewrap">{{snippetText}}</text>
+  </view>
+
+  <view class="card-footer">
+    <view class="tags">
+      <block wx:for="{{material.tags || []}}" wx:key="*this">
+        <text class="tag">{{item}}</text>
+      </block>
+    </view>
+    <view class="actions">
+      <button size="mini" plain="true" bindtap="onSelect"> {{ selected ? '取消选中' : '选中' }} </button>
+    </view>
+  </view>
+</view>

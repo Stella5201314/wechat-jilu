@@ -1,14 +1,10 @@
 {
   "usingComponents": {
-    "material-card": "/components/business/material-card/material-card",
-    "outline-editor": "/components/business/outline-editor/outline-editor",
-    "writing-sidebar": "/components/business/writing-sidebar/writing-sidebar",
-    "prompt-preview": "/components/business/prompt-preview/prompt-preview"
-  },
-  "navigationBarTitleText": "写作生成中心",
-  "navigationBarBackgroundColor": "#1890ff",
-  "navigationBarTextStyle": "white",
-  "backgroundColor": "#f5f5f5",
-  "enablePullDownRefresh": true,
-  "onReachBottomDistance": 50
+    "header-nav": "../../components/layout/header-nav/header-nav",
+    "bottom-tabs": "../../components/layout/bottom-tabs/bottom-tabs",
+    "material-card": "../../components/common/material-card/material-card",
+    "tag-selector": "../../components/common/tag-selector/tag-selector",
+    "prompt-preview": "../../components/common/prompt-preview/prompt-preview",
+    "writing-sidebar": "../../components/business/writing-sidebar/writing-sidebar"
+  }
 }

@@ -1,0 +1,7 @@
+.overlay { position:fixed; left:0; right:0; top:0; bottom:0; background:rgba(0,0,0,0.4); display:flex; align-items:center; justify-content:center; z-index:999; }
+.dialog { width:92%; max-height:80%; background:#fff; border-radius:8px; overflow:hidden; display:flex; flex-direction:column; }
+.dialog-header { display:flex; justify-content:space-between; padding:12px; border-bottom:1px solid #eee; align-items:center; }
+.dialog-body { padding:12px; overflow:auto; color:#333; }
+.prompt-text { white-space:pre-wrap; word-break:break-word; }
+.dialog-footer { padding:12px; border-top:1px solid #eee; display:flex; gap:8px; justify-content:flex-end; }
+.close { background:transparent; border: none; color:#999; }

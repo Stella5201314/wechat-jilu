@@ -1,0 +1,14 @@
+<view class="header">
+  <view class="left" bindtap="onBack" wx:if="{{showBack}}">
+    <image class="back-icon" src="{{backIcon}}"></image>
+  </view>
+
+  <view class="center">
+    <text class="title" catchtap="noop">{{title}}</text>
+    <text class="subtitle" wx:if="{{subtitle}}">{{subtitle}}</text>
+  </view>
+
+  <view class="right" bindtap="onRight" wx:if="{{showRight}}">
+    <text class="right-text">{{rightText}}</text>
+  </view>
+</view>

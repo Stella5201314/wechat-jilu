@@ -1,0 +1,9 @@
+{
+  "envId": "cloud1-7grm9g6829d6405e",
+  "projectId": "wx7927879c07e6a671",
+  "functionsRoot": "cloudfunctions",
+  "framework": {
+    "name": "custom",
+    "version": "1.0.0"
+  }
+}

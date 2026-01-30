@@ -1,75 +1,62 @@
-// miniprogram/app.js
+// 小程序入口
 App({
-  globalData: {
-    userInfo: null,
-    openid: null,
-    hasUserInfo: false,
-    canIUseGetUserProfile: false
-  },
-
-  onLaunch: function() {
-    // 初始化云开发
-    if (wx.cloud) {
+  onLaunch(options) {
+    // 初始化云能力（如果你启用了云开发）
+     // 初始化云开发
+     if (wx.cloud) {
       wx.cloud.init({
         env: 'cloud1-7grm9g6829d6405e', // 替换为你的云环境ID
         traceUser: true,
       })
       
-      // 获取用户openid
-      this.getOpenId()
+      
     }
+
     
-    // 检查新版本
-    this.checkUpdate()
+
+    // 可在此做全局数据加载（例如读取本地缓存的用户信息或偏好）
+    const userInfo = wx.getStorageSync('userInfo') || null;
+    this.globalData.userInfo = userInfo;
+
+    // 简单的版本与环境信息（可在 CI 中替换）
+    this.globalData.env = {
+      mode: 'development',
+      appId: 'wx7927879c07e6a671'
+    };
+
+    // 若需根据 options.scene 处理扫码或小程序参数可在此处处理
+    this._handleLaunchOptions(options);
   },
 
-  // 获取用户openid
-  getOpenId: function() {
-    wx.cloud.callFunction({
-      name: 'getOpenId',
-      success: res => {
-        this.globalData.openid = res.result.openid
-        console.log('获取openid成功:', res.result.openid)
-      },
-      fail: err => {
-        console.error('获取openid失败:', err)
-      }
-    })
-  },
-
-  // 检查小程序更新
-  checkUpdate: function() {
-    if (wx.canIUse('getUpdateManager')) {
-      const updateManager = wx.getUpdateManager()
-      
-      updateManager.onCheckForUpdate(function(res) {
-        console.log('检查更新结果:', res.hasUpdate)
-      })
-      
-      updateManager.onUpdateReady(function() {
-        wx.showModal({
-          title: '更新提示',
-          content: '新版本已经准备好，是否重启应用？',
-          success: function(res) {
-            if (res.confirm) {
-              updateManager.applyUpdate()
-            }
-          }
-        })
-      })
-      
-      updateManager.onUpdateFailed(function() {
-        wx.showToast({
-          title: '更新失败',
-          icon: 'none'
-        })
-      })
+  _handleLaunchOptions(options = {}) {
+    // 例如：options.query 可包含从外部打开的小程序参数（分享、二维码等）
+    if (options && options.query) {
+      this.globalData.launchQuery = options.query;
     }
   },
 
-  // 全局错误处理
-  onError: function(msg) {
-    console.error('小程序错误:', msg)
-    // 可以上报错误到服务器
+  globalData: {
+    userInfo: null,
+    launchQuery: null,
+    env: {}
+  },
+
+  // 供页面调用的简单工具：获取用户信息（若未登录则触发 getUserProfile）
+  async ensureUserProfile() {
+    if (this.globalData.userInfo) return this.globalData.userInfo;
+    return new Promise((resolve, reject) => {
+      // 推荐使用 wx.getUserProfile 获取用户信息（需要用户交互）
+      wx.getUserProfile({
+        desc: '用于完善用户资料',
+        success: (res) => {
+          this.globalData.userInfo = res.userInfo;
+          wx.setStorageSync('userInfo', res.userInfo);
+          resolve(res.userInfo);
+        },
+        fail: (err) => {
+          reject(err);
+        }
+      });
+    });
   }
-})
+});

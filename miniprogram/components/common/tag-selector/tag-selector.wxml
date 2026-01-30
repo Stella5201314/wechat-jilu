@@ -1,0 +1,9 @@
+<view class="tag-selector">
+  <scroll-view scroll-x="true" class="tag-row" show-scrollbar="false">
+    <block wx:for="{{tags}}" wx:key="*this">
+      <view class="tag-item {{isSelected(item) ? 'selected' : ''}}" data-tag="{{item}}" bindtap="toggleTag">
+        <text>{{item}}</text>
+      </view>
+    </block>
+  </scroll-view>
+</view>

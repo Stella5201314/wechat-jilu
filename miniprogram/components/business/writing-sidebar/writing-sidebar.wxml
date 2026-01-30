@@ -1,0 +1,23 @@
+<view class="sidebar">
+  <view class="field">
+    <text class="label">写作主题</text>
+    <input placeholder="输入主题或问题（示例：数字乡村发展建议）" bindinput="onThemeInput" value="{{theme}}" />
+  </view>
+
+  <view class="field">
+    <text class="label">模板</text>
+    <picker mode="selector" range="{{templates}}" bindchange="onTemplateChange">
+      <view class="picker">{{selectedTemplateName}}</view>
+    </picker>
+  </view>
+
+  <view class="field">
+    <text class="label">附加说明（可选）</text>
+    <input placeholder="写作风格、字数等要求" bindinput="onOptsInput" value="{{optionsText}}" />
+  </view>
+
+  <view class="actions">
+    <button class="btn-primary" bindtap="onSubmit">生成草稿</button>
+    <button bindtap="onAiSuggest">AI 灵感</button>
+  </view>
+</view>
